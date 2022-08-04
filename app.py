@@ -21,19 +21,18 @@ class Rectangle:
             pass  
 
 def get_coordinates_for_rectangle(event):
-    
+    x, y = event.x, event.y
+    point = Point(x,y)
+
     if len(newRec.points)<3:
-        x, y = event.x, event.y
-        point = Point(x,y)
         newRec.get_point(point)
         print(x,y)
     else:
-        x, y = event.x, event.y
-        point = Point(x,y)
         newRec.get_point(point)
         print(x,y)
         print('4 points were already selected')
-        root.unbind('<Button-1>') 
+        root.unbind('<Button-1>')
+        #Em vez de  unbind, usar hover como event
 
 def draw_rectangle(event):
     
