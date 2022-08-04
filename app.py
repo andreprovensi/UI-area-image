@@ -33,19 +33,7 @@ def get_coordinates_for_rectangle(event):
         newRec.get_point(point)
         print(x,y)
         print('4 points were already selected')
-        root.unbind('<Button-1>')
-
-def create_rectangle(root):
-    
-    if len(newRec.points)>4:
-
-        root.unbind('<Button>')
-    
-    #elif len(newRec.points)<3:
-    else:
-        root.bind('<Button-1>', get_coordinates_for_rectangle)
-    
-
+        root.unbind('<Button-1>') 
 
 def draw_rectangle(event):
     
@@ -72,19 +60,15 @@ canvas.create_image(5, 5, anchor=NW, image=img_tk)
 newRec = Rectangle()
 
 button = ttk.Button(root,text ='Select Points', command=lambda: root.bind('<Button-1>', get_coordinates_for_rectangle))
-button2 = ttk.Button(root,text ='Draw Rectangle', command=lambda: root.unbind('<Button-1>'))
-#button3 = ttk.Button(root, text='Draw Rectangle')
 
-#button.bind('<Button>', create_rectangle)
-#button.bind('<Return>', lambda: root.unbind('<Button-1>', get_coordinates_for_rectangle), add='+')
+button2 = ttk.Button(root,text ='Draw Rectangle', command=lambda: root.unbind('<Button-1>'))
+
 button2.bind('<Button>', draw_rectangle)
 
 button.pack()
+
 button2.pack()
-#button3.pack()
 
-
-#root.update()
 root.mainloop()
 
 print(f'As coordendas do segundo ponto são {newRec.points[1].x} e {newRec.points[1].y}')
