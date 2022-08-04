@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageOps
 
 class Point:
 
@@ -52,6 +52,8 @@ canvas.pack()
 picture = Image.open("images/dresden.jpg")
 
 picture_RGB = picture.convert('RGB')
+
+picture_Grey = ImageOps.grayscale(picture)
 
 img_tk = ImageTk.PhotoImage(picture)
 
