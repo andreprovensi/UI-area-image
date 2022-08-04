@@ -23,12 +23,16 @@ class Rectangle:
 
 def get_coordinates_for_rectangle(event):
     
-    if len(newRec.points)<4:
+    if len(newRec.points)<3:
         x, y = event.x, event.y
         point = Point(x,y)
         newRec.get_point(point)
         print(x,y)
     else:
+        x, y = event.x, event.y
+        point = Point(x,y)
+        newRec.get_point(point)
+        print(x,y)
         print('4 points were already selected')
         root.unbind('<Button-1>')
 
