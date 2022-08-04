@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-from urllib.request import AbstractDigestAuthHandler
 from PIL import ImageTk, Image
 
 class Point:
