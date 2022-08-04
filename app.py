@@ -42,6 +42,7 @@ def draw_rectangle(event):
     for i in range(3):
         canvas.create_line(newRec.points[i].x, newRec.points[i].y, newRec.points[i+1].x, newRec.points[i+1].y)
 
+    #testar canvas.create_polygon
 
 root = Tk()
 
