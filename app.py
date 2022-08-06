@@ -67,10 +67,15 @@ button2 = ttk.Button(root,text ='Draw Rectangle', command=lambda: root.unbind('<
 
 button2.bind('<Button>', draw_rectangle)
 
+button2.bindtags(['Meu botao 1'])
+
 button.pack()
 
 button2.pack()
 
+#print('\n',button2.bindtags())
+
 root.mainloop()
 
 print(f'As coordendas do segundo ponto são {newRec.points[1].x} e {newRec.points[1].y}')
+
