@@ -49,7 +49,7 @@ canvas = Canvas(root, width=600, height=600)
 
 canvas.pack()
 
-picture = Image.open("images/dresden.jpg")
+picture = Image.open("images/lesao1.jpeg")
 
 picture_RGB = picture.convert('RGB')
 
@@ -67,7 +67,7 @@ button2 = ttk.Button(root,text ='Draw Rectangle', command=lambda: root.unbind('<
 
 button2.bind('<Button>', draw_rectangle)
 
-button2.bindtags(['Meu botao 1'])
+#button2.bindtags(['Meu botao 1'])
 
 button.pack()
 
