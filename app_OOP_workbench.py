@@ -84,19 +84,11 @@ class App:
         self.button_free_draw.pack(anchor='e',padx=1,pady=1)
         self.slider.pack(anchor='e',padx=1,pady=1)
 
-
-        # if len(self.freeDraw.points)>1:
-        #     canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
-
     def open_image(self):
 
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
         self.imagem.src_img = Image.open(self.imagem.file)
-
-        # picture=Image.open(self.imagem.file)
-
-        # self.imagem.src_img = picture
 
         self.render_image()
 
