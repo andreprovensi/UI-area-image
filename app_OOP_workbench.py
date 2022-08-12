@@ -1,16 +1,15 @@
 from tkinter import *
 from tkinter import ttk
+import tkinter
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 
 class Point:
-
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
 class Rectangle:
-
     def __init__(self, points=[]):
         self.points = points
         
@@ -22,15 +21,12 @@ class Rectangle:
             pass  
 
 class Imagem:
-
     def __init__(self):
-
         self.file = None
         self.img = None
         self.src_img = None
 
 class FreeDraw:
-    
     def __init__(self, points=[]):
         self.points = points
 
@@ -41,7 +37,6 @@ class FreeDraw:
         self.points = []
 
 class App:
-
     def __init__(self):
 
         self.root = Tk()
@@ -60,14 +55,32 @@ class App:
 
         self.frame = Frame(self.root)
 
+        self.frame_buttons = Frame(self.root,relief=RAISED,borderwidth=3)
+        self.frame_buttons.pack(side=tkinter.RIGHT,fill=BOTH,expand=False)
+
         self.canvas = Canvas(self.frame)
 
-        self.slider = ttk.Scale(self.root,from_=0.1, to=100, orient='horizontal', command = lambda event: self.render_image())
+        self.slider = ttk.Scale(self.frame_buttons,from_=1, to=200, orient='horizontal', command = lambda event: self.render_image())
         self.slider.set(30)
         
+        self.button_free_draw = ttk.Button(
+            self.frame_buttons, text ='Free Draw', 
+            command = lambda: [self.freeDraw.reset_points(),self.root.bind('<Double-Button>', lambda event: self.root.bind('<Motion>',free_draw))]
+        )
+
+        #self.button_free_draw.pack(anchor='ne',padx=1,pady=1)
+        self.button_free_draw.pack(side=tkinter.TOP,pady=25)
+        self.slider.pack(side=tkinter.TOP,padx=1,pady=15)
+
         def free_draw(event):
             
-            self.root.bind('<Double-Button>', lambda event: self.root.unbind('<Motion>'))
+            #self.root.bind('<Double-Button>', lambda event: self.root.unbind('<Motion>')) # Não fecha o desenho
+            self.root.bind(
+                '<Double-Button>', 
+                lambda event: [self.canvas.create_line(self.freeDraw.points[-1].x, self.freeDraw.points[-1].y, self.freeDraw.points[-0].x, self.freeDraw.points[-0].y),
+                self.root.unbind('<Motion>')]
+            ) # Fecha o desenho
+
             x, y = event.x, event.y
             ponto = Point(x,y)
             print(x,y)
@@ -76,27 +89,12 @@ class App:
             if len(self.freeDraw.points)>1:
                 self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
 
-        self.button_free_draw = ttk.Button(
-            self.root, text ='Test Spline', 
-            command = lambda: [self.freeDraw.reset_points(),self.root.bind('<Double-Button>', lambda event: self.root.bind('<Motion>',free_draw))]
-        )
-
-        self.button_free_draw.pack(anchor='e',padx=1,pady=1)
-        self.slider.pack(anchor='e',padx=1,pady=1)
-
-
-        # if len(self.freeDraw.points)>1:
-        #     canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
 
     def open_image(self):
 
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
         self.imagem.src_img = Image.open(self.imagem.file)
-
-        # picture=Image.open(self.imagem.file)
-
-        # self.imagem.src_img = picture
 
         self.render_image()
 
@@ -133,4 +131,4 @@ myApp = App()
 
 myApp.root.mainloop()
 
-print(myApp.freeDraw.points[3].x)
+#print(myApp.freeDraw.points[3].x)
