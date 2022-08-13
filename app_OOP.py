@@ -1,16 +1,16 @@
 from tkinter import *
 from tkinter import ttk
+import tkinter
 from tkinter.filedialog import askopenfilename
+from typing import final
 from PIL import ImageTk, Image
 
 class Point:
-
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
 class Rectangle:
-
     def __init__(self, points=[]):
         self.points = points
         
@@ -22,15 +22,12 @@ class Rectangle:
             pass  
 
 class Imagem:
-
     def __init__(self):
-
         self.file = None
         self.img = None
         self.src_img = None
 
 class FreeDraw:
-    
     def __init__(self, points=[]):
         self.points = points
 
@@ -39,9 +36,54 @@ class FreeDraw:
 
     def reset_points(self):
         self.points = []
+    
+    def closing_points_free_draw(self):
+        
+        if len(self.points)>1:
+            final_point = self.points[-1]
+            initial_point = self.points[0]
+
+            delta_x = initial_point.x - final_point.x
+            delta_y = initial_point.y - final_point.y
+
+            if delta_x > 0:
+                x_dir = 1
+            elif delta_x < 0:
+                x_dir = -1
+            elif delta_x == 0:
+                x_dir = 0
+
+            if delta_y > 0:
+                y_dir = 1
+            elif delta_y < 0:
+                y_dir = -1
+            elif delta_y == 0:
+                y_dir = 0
+
+            # x_dir = int(abs(delta_x)/delta_x)
+            # y_dir = int(abs(delta_y)/delta_y)
+
+            points_list = []
+
+            for i in range(1,abs(delta_x)+1):
+                ponto = Point(final_point.x+i*x_dir,final_point.y)
+                points_list.append(ponto)
+            for j in range(1,abs(delta_y)+1):
+                ponto = Point(initial_point.x,initial_point.y-j*y_dir)
+                points_list.append(ponto)
+            
+            for k in points_list:
+                self.get_point(k)
+
+        else:
+            pass
+
+
+    def calcula_area(self):
+        if len(self.points)>2:
+            pass
 
 class App:
-
     def __init__(self):
 
         self.root = Tk()
@@ -60,31 +102,53 @@ class App:
 
         self.frame = Frame(self.root)
 
+        self.frame_buttons = Frame(self.root,relief=RAISED,borderwidth=3)
+        self.frame_buttons.pack(side=tkinter.RIGHT,fill=BOTH,expand=False)
+
         self.canvas = Canvas(self.frame)
 
-        self.slider = ttk.Scale(self.root,from_=0.1, to=100, orient='horizontal', command = lambda event: self.render_image())
+        self.slider = ttk.Scale(self.frame_buttons,from_=1, to=200, orient='horizontal', command = lambda event: self.render_image())
         self.slider.set(30)
         
+        self.button_free_draw = ttk.Button(
+            self.frame_buttons, text ='Free Draw', 
+            command = lambda: [self.freeDraw.reset_points(),self.root.bind('<Double-Button>', lambda event: self.root.bind('<Motion>',free_draw))]
+        )
+
+        #self.button_free_draw.pack(anchor='ne',padx=1,pady=1)
+        self.button_free_draw.pack(side=tkinter.TOP,pady=25)
+        self.slider.pack(side=tkinter.TOP,padx=1,pady=15)
+
         def free_draw(event):
             
-            self.root.bind('<Double-Button>', lambda event: self.root.unbind('<Motion>'))
+            self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw()]) # Não fecha o desenho
+            # self.root.bind(
+            #     '<Double-Button>', 
+            #     lambda event: [self.canvas.create_line(self.freeDraw.points[-1].x, self.freeDraw.points[-1].y, self.freeDraw.points[-0].x, self.freeDraw.points[-0].y),
+            #     self.root.unbind('<Motion>'),self.root.unbind('<Double-Button>')]
+            # ) # Fecha o desenho
+
             x, y = event.x, event.y
             ponto = Point(x,y)
+
+            # tpl_list = [(pnt.x, pnt.y) for pnt in self.freeDraw.points]
+
+            # if (x,y) in tpl_list and len(tpl_list)>15:
+            #     self.root.unbind('<Motion>')
+
             print(x,y)
             self.freeDraw.get_point(ponto)
     
             if len(self.freeDraw.points)>1:
                 self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
+                #self.canvas.create_line(self.freeDraw.points[-1].x, self.freeDraw.points[-1].y, x, y)
 
-        self.button_free_draw = ttk.Button(
-            self.root, text ='Test Spline', 
-            command = lambda: [self.freeDraw.reset_points(),self.root.bind('<Double-Button>', lambda event: self.root.bind('<Motion>',free_draw))]
-        )
+        
 
-        self.button_free_draw.pack(anchor='e',padx=1,pady=1)
-        self.slider.pack(anchor='e',padx=1,pady=1)
 
     def open_image(self):
+
+        self.root.update()
 
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
@@ -120,9 +184,11 @@ class App:
         else:
             pass
         
-    
+    def close_free_draw(self):
+        points_list = [(point.x,point.y )for point in self.freeDraw.points]
+        self.canvas.create_line(points_list)
+
 myApp = App()
 
 myApp.root.mainloop()
 
-print(myApp.freeDraw.points[3].x)

@@ -26,6 +26,9 @@ myset = myset | {p2}
 
 print(myset)
 
-aa = []
+# aa = []
 
-print(aa[-1])
+# print(aa[-1])
+
+a = 1
+print(type(a))
