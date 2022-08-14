@@ -1,3 +1,4 @@
+from distutils.cmd import Command
 from tkinter import *
 from tkinter import ttk
 import tkinter
@@ -60,9 +61,6 @@ class FreeDraw:
             elif delta_y == 0:
                 y_dir = 0
 
-            # x_dir = int(abs(delta_x)/delta_x)
-            # y_dir = int(abs(delta_y)/delta_y)
-
             points_list = []
 
             for i in range(1,abs(delta_x)+1):
@@ -107,7 +105,7 @@ class App:
 
         self.canvas = Canvas(self.frame)
 
-        self.slider = ttk.Scale(self.frame_buttons,from_=1, to=200, orient='horizontal', command = lambda event: self.render_image())
+        self.slider = ttk.Scale(self.frame_buttons,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image())
         self.slider.set(30)
         
         self.button_free_draw = ttk.Button(
@@ -121,34 +119,20 @@ class App:
 
         def free_draw(event):
             
-            self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw()]) # Não fecha o desenho
-            # self.root.bind(
-            #     '<Double-Button>', 
-            #     lambda event: [self.canvas.create_line(self.freeDraw.points[-1].x, self.freeDraw.points[-1].y, self.freeDraw.points[-0].x, self.freeDraw.points[-0].y),
-            #     self.root.unbind('<Motion>'),self.root.unbind('<Double-Button>')]
-            # ) # Fecha o desenho
+            self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw()]) 
 
             x, y = event.x, event.y
             ponto = Point(x,y)
-
-            # tpl_list = [(pnt.x, pnt.y) for pnt in self.freeDraw.points]
-
-            # if (x,y) in tpl_list and len(tpl_list)>15:
-            #     self.root.unbind('<Motion>')
 
             print(x,y)
             self.freeDraw.get_point(ponto)
     
             if len(self.freeDraw.points)>1:
                 self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
-                #self.canvas.create_line(self.freeDraw.points[-1].x, self.freeDraw.points[-1].y, x, y)
-
-        
-
 
     def open_image(self):
 
-        self.root.update()
+        #self.root.update()
 
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
@@ -172,20 +156,21 @@ class App:
             
             self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
 
-            self.frame.pack(anchor='nw', padx=20,pady=2)
+            self.frame.pack(side=LEFT,anchor='n', padx=20,pady=2)
             
             self.canvas.destroy()
                    
             self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized)
 
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
+            
+            self.canvas.pack(side=LEFT)
 
-            self.canvas.pack()
         else:
             pass
         
     def close_free_draw(self):
-        points_list = [(point.x,point.y )for point in self.freeDraw.points]
+        points_list = [(point.x,point.y) for point in self.freeDraw.points]
         self.canvas.create_line(points_list)
 
 myApp = App()
