@@ -79,3 +79,4 @@ root.mainloop()
 
 print(f'As coordendas do segundo ponto são {newRec.points[1].x} e {newRec.points[1].y}')
 
+
