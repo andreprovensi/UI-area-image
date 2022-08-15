@@ -31,4 +31,4 @@ print(myset)
 # print(aa[-1])
 
 a = 1
-print(type(a))
+print(float(a))
