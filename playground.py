@@ -30,5 +30,5 @@ print(myset)
 
 # print(aa[-1])
 
-a = 1
-print(float(a))
+a = 1.2855866655
+print(f'O valor e de {a:.2f}')
