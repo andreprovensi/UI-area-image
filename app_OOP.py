@@ -290,8 +290,6 @@ class App:
 
                 areas.append(area)
             
-            
-
             self.freeDraw.area = abs(sum(tuple(areas)))
             self.action_box.config(text=f'A área da figura é {abs(sum(tuple(areas))):.2f} mm²')
             
