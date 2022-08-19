@@ -220,6 +220,7 @@ class App:
         if len(self.dimensionRatio.points)<=1:
             self.dimensionRatio.points.append(ponto)
             self.canvas.create_oval((event.x,event.y,event.x,event.y),fill='black',width=5)
+            
         elif len(self.dimensionRatio.points) == 2:
             delta_x = abs(self.dimensionRatio.points[1].x - self.dimensionRatio.points[0].x)+1
             delta_y = abs(self.dimensionRatio.points[1].y - self.dimensionRatio.points[0].y)+1
