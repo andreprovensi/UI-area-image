@@ -1,6 +1,8 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter.filedialog import askopenfilename
+from PIL import ImageTk, Image
+
 
 class Point:
     def __init__(self, x=0, y=0):
@@ -19,96 +21,319 @@ class Rectangle:
             pass  
 
 class Imagem:
+    def __init__(self):
+        self.file = None
+        self.img = None
+        self.src_img = None
 
-    def __init__(self, file=''):
-
-        self.file = file
-        self.img = PhotoImage(file=file)
-
-class FreeDraw:
-
+class Dimension:
     def __init__(self, points=[]):
         self.points = points
+        self.length = None
+        self.ratio = None
+    
+    def reset_points(self):
+        self.points = []
+
+    def set_length(self,length):
+        self.length = length
+
+class FreeDraw:
+    def __init__(self, points=[]):
+        self.points = points
+        self.area = None
 
     def get_point(self,ponto=Point()):   
         self.points.append(ponto)
 
     def reset_points(self):
         self.points = []
-
-class App:
-
-    def __init__(self):
+    
+    def closing_points_free_draw(self):
         
-        #Cria a interface gráfica
+        if len(self.points)>1:
+            final_point = self.points[-1]
+            initial_point = self.points[0]
+
+            delta_x = initial_point.x - final_point.x
+            delta_y = initial_point.y - final_point.y
+
+            if delta_x > 0:
+                x_dir = 1
+            elif delta_x < 0:
+                x_dir = -1
+            elif delta_x == 0:
+                x_dir = 0
+
+            if delta_y > 0:
+                y_dir = 1
+            elif delta_y < 0:
+                y_dir = -1
+            elif delta_y == 0:
+                y_dir = 0
+
+            points_list = []
+
+            for i in range(1,abs(delta_x)+1):
+                ponto = Point(final_point.x+i*x_dir,final_point.y)
+                points_list.append(ponto)
+            for j in range(1,abs(delta_y)+1):
+                ponto = Point(initial_point.x,initial_point.y-j*y_dir)
+                points_list.append(ponto)
+            
+            for k in points_list:
+                self.get_point(k)
+
+        else:
+            pass
+
+   
+class App:
+    def __init__(self):
+
         self.root = Tk()
         self.root.geometry("1000x500")
-        
-        # Instancia o objeto imagem
+
         self.imagem = Imagem()
-        
-        # Instancia o objeto desenho livre
+
         self.freeDraw = FreeDraw()
 
-        # Cria o menu
+        self.dimensionRatio = Dimension()
+        
+
+        # Cria o menu para carregar as imagens
         self.menubar = Menu(self.root)
-        self.root.config(menu=self.menubar)
+        self.root.config(menu=self.menubar,padx=1,pady=1)
         self.file_menu = Menu(self.menubar,tearoff=False)
         self.menubar.add_cascade(label="File", menu=self.file_menu)
         self.file_menu.add_command(label="Open", command=lambda: self.open_image())
         self.file_menu.add_command(label="Exit", command=lambda: self.root.quit())
-        
-        # Instancia o frame onde a imagem estará contida
+
+        # FRAMES
+
+        # Cria o frame geral
         self.frame = Frame(self.root)
 
-        # Instancia o canvas onde serão feitos os desenhos
-        self.canvas = Canvas(self.frame, width=self.imagem.img.width(), height=self.imagem.img.height())
+        # Frame para Botões dos tipos de desenho
+
+        self.frame_buttons = Frame(self.root,relief=RAISED,borderwidth=3)
+        self.frame_buttons.pack(side=RIGHT,fill=BOTH,expand=False)
+
+
+        # Frame e componentes para a definição do tamanho da imagem e da razão mm/pixel
+
+        self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2)
+        self.frame_img_prop.pack(side=LEFT,fill=BOTH,expand=False)
+
+        self.frame_zoom = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=1)
+
+        # FRAME INPUT
+        self.frame_input = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=1)
+
+        #FRAME INPUT LABLE
+        self.frame_input_lable = Frame(self.frame_input)
+
+        #FRAME INPUT, LENGTH 1 LED
+        self.frame_input_led_1 = Frame(self.frame_input)
+
+        #FRAME INPUT, LENGTH 2 LED
+        self.frame_input_led_2 = Frame(self.frame_input)
+
+        # FRAME INPUT BUTTON
+        self.frame_input_button = Frame(self.frame_input)
+ 
+
+
+        # SLIDERS
+        self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
+        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image(),length=105)
+        self.slider.set(30)
+
+        # INPUTS, LABEL and LEDS
+        self.dimension_input_lable = ttk.Label(self.frame_input_lable,text='Comprimento conhecido em mm',wraplength=150)
+
+        self.green_led_figure_1 = ImageTk.PhotoImage(Image.open('small_green_led.jpg'))
+        self.red_led_figure_1 = ImageTk.PhotoImage(Image.open('small_red_led.jpg'))
+        self.led_1 = ttk.Label(self.frame_input_led_1, image=self.red_led_figure_1 )
+
+        self.green_led_figure_2 = ImageTk.PhotoImage(Image.open('small_red_led.jpg'))
+        self.red_led_figure_2 = ImageTk.PhotoImage(Image.open('small_red_led.jpg'))
+        self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
         
-        def __call_free_draw(event):
-            def __free_draw(event):
-                
-                x, y = event.x, event.y
-                ponto = Point(x,y)
-                print(x,y)
-                if len(self.freeDraw.points)==0 or x != self.freeDraw.points[-1].x or y != self.freeDraw.points[-1].y:
-                    self.freeDraw.get_point(ponto)
+        
+        self.input_value_1 = StringVar(self.root)
+        self.dimension_input_1 = Entry(self.frame_input_led_1,textvariable=self.input_value_1, bd=3)
+        
+        self.input_value_2 = StringVar(self.root)
+        self.dimension_input_2 = Entry(self.frame_input_led_2,textvariable=self.input_value_2, bd=3)
+        
 
-            self.freeDraw.points=[]
-            self.root.bind('<Motion>',__free_draw)
-            self.root.bind('<Double-Button>', lambda event: self.root.unbind('<Motion>'))
+        self.button_set_dimension = ttk.Button(
+            self.frame_input_button,text='Selecionar pontos do\ncomprimento',
+            command= lambda: self.button_get_length_pressed()
+        )
+        
+        # Action box
+        self.action_box = Message(self.frame_img_prop,text='-Carregue uma imagem\n-Ajuste o zoom\n-Digite o valor do comprimento conhecido\n-Aperte para selecionar os pontos que o definem',bg='light yellow', anchor='n',justify=LEFT)
+        #self.action_box.pack(side=BOTTOM, fill=BOTH,expand=True)
+        
+    
+        #Positioning
+        self.frame_zoom.pack(side=TOP,fill=BOTH)
+        self.frame_input.pack(side=TOP,fill=BOTH)
+        self.action_box.pack(side=TOP, fill=BOTH,expand=True)
+        self.frame_input_lable.pack(side=TOP)
+        self.frame_input_led_1.pack(side = TOP)
+        self.frame_input_led_2.pack(side=TOP)
+        self.frame_input_button.pack(side=TOP)
 
-        self.button_free_draw = ttk.Button(self.root,text ='Free Draw', command=lambda: self.root.bind('<Double-Button>',__call_free_draw) )
-        #self.button_free_draw = ttk.Button(self.root,text ='Free Draw', command=lambda: self.root.bind('<Double-Button>',lambda event: self.root.bind('<Motion>',__free_draw) ))
+        self.slider_lable.pack(side=LEFT,anchor='w',pady=15)
+        self.slider.pack(side=LEFT,anchor='n')
 
-        self.button_free_draw.pack(anchor='e',padx=10,pady=10)
+        self.dimension_input_lable.pack(side=TOP,pady=10)
+        self.dimension_input_1.pack(side=LEFT)
+        self.dimension_input_2.pack(side=LEFT)
 
-
-        # if len(self.freeDraw.points)>1:
-        #     canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
+        self.led_1.pack(side=RIGHT,anchor='ne')
+        self.led_2.pack(side=RIGHT,anchor='ne')
+        self.button_set_dimension.pack(side=LEFT,pady=10)
+        #self.green_led.
+        # Canvas
+        self.canvas = Canvas(self.frame)
 
         
+        self.button_free_draw = ttk.Button(
+            self.frame_buttons, text ='Desenho Livre', 
+            command = self.check_free_draw
+        )
+
+        #self.button_free_draw.pack(anchor='ne',padx=1,pady=1)
+        self.button_free_draw.pack(side=TOP,pady=25)
+        self.slider.pack(side=TOP,padx=1,pady=15)
+
+    def check_free_draw(self):
+        if self.dimensionRatio.ratio:
+            self.render_image()
+            self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes')
+            self.freeDraw.reset_points()
+            self.root.bind('<Double-Button>', lambda event: self.root.bind('<Motion>',self.free_draw))
+        else:
+            self.root.unbind('<Motion>')
+            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+    
+    def free_draw(self,event):
+        if self.dimensionRatio.ratio:
+            self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_geom()]) 
+            x, y = event.x, event.y
+            ponto = Point(x,y)
+            print(x,y)
+            self.freeDraw.get_point(ponto)
+            if len(self.freeDraw.points)>1:
+                self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
+        else:
+            self.root.unbind('<Motion>')
+            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+
+    def button_get_length_pressed(self):
+        if self.input_value_1.get():
+            self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
+            self.action_box.config(text='-Selecione os pontos do comprimento conhecido\n-Clique em Desenho Livre')
+            self.dimensionRatio.reset_points()
+            self.dimensionRatio.set_length(float(self.input_value_1.get()))
+            self.root.bind('<Button-1>', lambda event: self.get_points_for_dimension(event))
+            
+        else:
+            messagebox.showerror('','Você precisa digitar o comprimento conhecido')
+            
+        
+    def get_points_for_dimension(self, event):   
+        ponto=Point(event.x,event.y)
+        
+        if len(self.dimensionRatio.points)<=1:
+            self.dimensionRatio.points.append(ponto)
+            self.canvas.create_oval((event.x,event.y,event.x,event.y),fill='black',width=5)
+            
+        elif len(self.dimensionRatio.points) == 2:
+            delta_x = abs(self.dimensionRatio.points[1].x - self.dimensionRatio.points[0].x)
+            delta_y = abs(self.dimensionRatio.points[1].y - self.dimensionRatio.points[0].y)
+            dist_px = (delta_x**2 + delta_y**2)**0.5
+            self.dimensionRatio.ratio = self.dimensionRatio.length/dist_px
+            self.render_image()
+            self.root.unbind('<Button-1>')
+        
+        if len(self.dimensionRatio.points) == 2:
+            self.led_1.config(image=self.green_led_figure_1)
+
+
     def open_image(self):
-
-        #self.imagem.img= PhotoImage()
-
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
-        self.imagem.img= PhotoImage(file=self.imagem.file)
+        self.imagem.src_img = Image.open(self.imagem.file)
 
-        picture_w, picture_h = self.imagem.img.width(), self.imagem.img.height()
+        self.render_image()
 
-        img_container = self.frame
+    def render_image(self):
+        if self.imagem.src_img:
 
-        img_container.pack(side=LEFT, padx=50,pady=50)
+            picture=self.imagem.src_img
 
-        self.canvas = Canvas(img_container, width=picture_w, height=picture_h)
+            picture_w, picture_h = picture.size
 
-        self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
+            picture_w_resized, picture_h_resized = int(picture_w * self.slider.get()/100), int(picture_h * self.slider.get()/100) 
 
-        self.canvas.pack()
+            self.imagem.img = ImageTk.PhotoImage(picture.resize((picture_w_resized, picture_h_resized),resample=Image.LANCZOS))
+
+            self.frame.destroy()
+            
+            self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
+
+            self.frame.pack(side=TOP,anchor='n', padx=20,pady=40)
+            
+            self.canvas.destroy()
+                   
+            self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized)
+
+            self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
+            
+            self.canvas.pack(side=LEFT)
+
+        else:
+            pass
         
+    def close_free_draw(self):
+        points_list = [(point.x,point.y) for point in self.freeDraw.points]
+        self.canvas.create_line(points_list)
+
+    def calcula_area_geom(self):
+        if len(self.freeDraw.points)>2 and self.dimensionRatio.ratio:
+            
+            unique_list = [self.freeDraw.points[0]]
+            #unique_list = self.freeDraw.points
+            areas=[]
+
+            for i, ponto in enumerate(self.freeDraw.points[1:]):
+                if self.freeDraw.points[i].x != self.freeDraw.points[i-1].x or self.freeDraw.points[i].y != self.freeDraw.points[i-1].y:
+                    unique_list.append(ponto)
+                else:
+                    pass
+                
+            for i, ponto in enumerate(unique_list[0:-1]):
+                delta_x_px = unique_list[i+1].x - unique_list[i].x
+                delta_y_px = unique_list[i+1].y - unique_list[i].y
+                delta_x_m = delta_x_px*self.dimensionRatio.ratio
+                delta_y_m = abs(delta_y_px*self.dimensionRatio.ratio)
+                y_1_m = min(unique_list[i].y,unique_list[i+1].y)*self.dimensionRatio.ratio
+                area = delta_x_m * (y_1_m + delta_y_m/2)
+
+                areas.append(area)
+            
+            
+
+            self.freeDraw.area = abs(sum(tuple(areas)))
+            self.action_box.config(text=f'A área da figura é {abs(sum(tuple(areas))):.2f} mm²')
+            
+                 
+
 myApp = App()
 
 myApp.root.mainloop()
-
-print(myApp.freeDraw.points[3].x)
