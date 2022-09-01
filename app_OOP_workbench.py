@@ -63,39 +63,24 @@ class FreeDraw:
         if len(self.points)>1:
             final_point = self.points[-1]
             initial_point = self.points[0]
-
+            # print(f'Ponto inicial ({initial_point.x},{initial_point.y})', f'Ponto final ({final_point.x},{final_point.y})')
             delta_x = initial_point.x - final_point.x
             delta_y = initial_point.y - final_point.y
-
-            if delta_x > 0:
-                x_dir = 1
-            elif delta_x < 0:
-                x_dir = -1
-            elif delta_x == 0:
-                x_dir = 0
-
-            if delta_y > 0:
-                y_dir = 1
-            elif delta_y < 0:
-                y_dir = -1
-            elif delta_y == 0:
-                y_dir = 0
-
+            
+            x_dir = 1 if delta_x>0 else -1 if delta_x < 0 else 0
+            y_dir = 1 if delta_y>0 else -1 if delta_y < 0 else 0
+      
             points_list = []
 
             for i in range(1,abs(delta_x)+1):
                 ponto = Point(final_point.x+i*x_dir,final_point.y)
                 points_list.append(ponto)
             for j in range(1,abs(delta_y)+1):
-                ponto = Point(initial_point.x,initial_point.y-j*y_dir)
+                ponto = Point(initial_point.x,final_point.y+j*y_dir)
                 points_list.append(ponto)
-            
+            # print(f'O último ponto pego foi {points_list[-1].x},{points_list[-1].y}')
             for k in points_list:
                 self.get_point(k)
-
-        else:
-            pass
-
    
 class App:
     def __init__(self):
@@ -130,8 +115,9 @@ class App:
         # Frame para Botões dos tipos de desenho
 
         self.frame_buttons = Frame(self.root,relief=RAISED,borderwidth=3)
-        self.frame_buttons.pack(side=RIGHT,fill=BOTH,expand=False)
+        self.frame_buttons.pack(side=RIGHT,fill=Y,expand=False)
 
+        # self.frame.pack(side=RIGHT,fill=BOTH)
 
         # Frame e componentes para a definição do tamanho da imagem e da razão mm/pixel
 
@@ -154,8 +140,6 @@ class App:
 
         # FRAME INPUT BUTTON
         self.frame_input_button = Frame(self.frame_input)
- 
-
 
         # SLIDERS
         self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
@@ -191,7 +175,6 @@ class App:
         )
         
         # Action box
-        # self.action_box = Message(self.frame_img_prop,text='- Carregue uma imagem\n\n- Ajuste o zoom\n\n- Digite os valores dos comprimentos\nconhecidos\n\n- Aperte C1 para definir os pontos\ndo comprimento 1\n\n- Aperte C2 para definir os pontos\ndo comprimento 2\n\n- Quando os dois leds ficarem verdes,\naperte em desenho livre',bg='light yellow', anchor='nw',justify=LEFT, width=120)
         self.action_box = Message(self.frame_img_prop,text='- Carregue uma imagem\n\n- Ajuste o zoom\n\n- Digite os valores dos comprimentos conhecidos\n\n- Aperte C1 para definir os pontos do comprimento 1\n\n- Aperte C2 para definir os pontos do comprimento 2\n\n- Quando os dois leds ficarem verdes, aperte em desenho livre',bg='light yellow', anchor='nw',justify=LEFT, width=150)
         
     
@@ -216,7 +199,6 @@ class App:
 
         self.led_1.pack(side=RIGHT,anchor='ne')
         self.led_2.pack(side=RIGHT,anchor='ne')
-        #self.button_set_dimension.pack(side=LEFT,pady=10)
     
         # Canvas
         self.canvas = Canvas(self.frame)
@@ -227,7 +209,6 @@ class App:
             command = self.check_free_draw
         )
 
-        #self.button_free_draw.pack(anchor='ne',padx=1,pady=1)
         self.button_free_draw.pack(side=TOP,pady=25)
         self.slider.pack(side=TOP,padx=1,pady=15)
 
@@ -260,33 +241,35 @@ class App:
         P2 = self.dimensionRatio_1.points[1]
         P3 = self.dimensionRatio_2.points[0]
         P4 = self.dimensionRatio_2.points[1]
-        
     
         delta_x_1 = P2.x - P1.x
         delta_y_1 = P2.y - P1.y
         #Colocar casos dos deltas serem 0
         angular_coeff_1 = delta_y_1 / delta_x_1 if delta_x_1 != 0 else None
-        #angular_coeff_1 = delta_y_1 / delta_x_1
         linear_coeff_1 = P1.y - angular_coeff_1 * P1.x if delta_x_1 !=0 else None
+        # angular_coeff_1 = delta_y_1 / delta_x_1
         # linear_coeff_1 = P1.y - angular_coeff_1 * P1.x
         P0_x = P1.x if delta_x_1 == 0 else None
 
         delta_x_2 = P4.x - P3.x
         delta_y_2 = P4.y - P3.y
         angular_coeff_2 = delta_y_2 / delta_x_2 if delta_x_2 != 0 else None
-        linear_coeff_2 = P2.y - angular_coeff_2 * P2.x if delta_x_2 !=0 else None
-        P0_x = P2.x if delta_x_2 == 0 else None
+        linear_coeff_2 = P3.y - angular_coeff_2 * P3.x if delta_x_2 !=0 else None
+
+        P0_x = P3.x if delta_x_2 == 0 else None
 
         P0_x = (linear_coeff_2 - linear_coeff_1) / (angular_coeff_1 - angular_coeff_2) if not P0_x else P0_x
         P0_y = angular_coeff_1 * P0_x + linear_coeff_1 if angular_coeff_1 else angular_coeff_2 * P0_x + linear_coeff_2
 
         P0 = Point(P0_x, P0_y)
 
+        print('Ponto zero',P0.x,P0.y)
+
         # Definir os pontos com máximo delta_x e delta_y entre P0 e os outros pontos 
                 
         vetor_1 = Point(max(abs(P1.x - P0.x), abs(P2.x - P0.x)), max(abs(P1.y - P0.y), abs(P2.y - P0.y)))
 
-        vetor_2 = Point(max(abs(P3.x - P0.x), abs(P3.x - P0.x)), max(abs(P4.y - P0.y), abs(P4.y - P0.y)))
+        vetor_2 = Point(max(abs(P3.x - P0.x), abs(P4.x - P0.x)), max(abs(P3.y - P0.y), abs(P4.y - P0.y)))
 
         self.area.area_px_plan = ((vetor_1.x*vetor_2.y) ** 2 + (vetor_2.x*vetor_1.y) ** 2) ** 0.5
 
@@ -297,6 +280,8 @@ class App:
         length_1 = self.dimensionRatio_1.length * (vetor_1.x**2 + vetor_1.y**2)**0.5 / (delta_x_1**2 + delta_y_1**2)**0.5
 
         length_2 = self.dimensionRatio_2.length * (vetor_2.x**2 + vetor_2.y**2)**0.5 / (delta_x_2**2 + delta_y_2**2)**0.5
+
+        print(f'O comprimento 1 é de {length_1} e o comprimento 2 de {length_2}')
 
         self.area.area_m_proj = length_1 * length_2 
 
@@ -347,7 +332,6 @@ class App:
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
             self.canvas.create_oval((event.x,event.y,event.x,event.y),fill='black',width=5)
-   
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
@@ -379,7 +363,7 @@ class App:
             
             self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
 
-            self.frame.pack(side=TOP,anchor='n', padx=20,pady=40)
+            self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
             
             self.canvas.destroy()
                    
@@ -387,7 +371,7 @@ class App:
 
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
             
-            self.canvas.pack(side=LEFT)
+            self.canvas.pack(side=TOP, anchor='n')
 
         else:
             pass
@@ -398,31 +382,20 @@ class App:
 
     def calcula_area_geom(self):
         if len(self.freeDraw.points)>2 and self.area.area_ratio_m_proj_px_proj:
-            
-            unique_list = [self.freeDraw.points[0]]
-            #unique_list = self.freeDraw.points
+
             areas_px=[]
 
-            for i, ponto in enumerate(self.freeDraw.points[1:]):
-                if self.freeDraw.points[i].x != self.freeDraw.points[i-1].x or self.freeDraw.points[i].y != self.freeDraw.points[i-1].y:
-                    unique_list.append(ponto)
-                else:
-                    pass
-
-            for i, ponto in enumerate(unique_list[0:-1]):
-                delta_x_px = unique_list[i+1].x - unique_list[i].x
-                delta_y_px = unique_list[i+1].y - unique_list[i].y
-                #delta_x_m = delta_x_px*self.area.area_ratio_m_proj_px_proj
-                #delta_y_m = abs(delta_y_px*self.area.area_ratio_m_proj_px_proj)
-                #y_1_m = min(unique_list[i].y,unique_list[i+1].y)*self.area.area_ratio_m_proj_px_proj
-                y_1_px = min(unique_list[i].y,unique_list[i+1].y)
+            for i,_ in enumerate(self.freeDraw.points):
+                delta_x_px = self.freeDraw.points[i].x - self.freeDraw.points[i-1].x
+                delta_y_px = self.freeDraw.points[i].y - self.freeDraw.points[i-1].y
+                y_1_px = min(self.freeDraw.points[i].y ,self.freeDraw.points[i-1].y)
                 area = delta_x_px * (y_1_px + delta_y_px/2)
 
                 areas_px.append(area)
             
-            self.freeDraw.area_px = abs(sum(tuple(areas_px)))
+            self.freeDraw.area_px = abs(sum(areas_px))
             
-            area_meters = self.freeDraw.area_px * self.area.area_ratio_m_proj_px_proj
+            area_meters = self.freeDraw.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
             self.freeDraw.area_m = area_meters
             
             self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
@@ -432,3 +405,7 @@ class App:
 myApp = App()
 
 myApp.root.mainloop()
+
+# print('Raza pixel proj pixel plan',myApp.area.area_ratio_px_proj_px_plan)
+
+# print('\n Razao m proj pixel proj', myApp.area.area_ratio_m_proj_px_proj)
