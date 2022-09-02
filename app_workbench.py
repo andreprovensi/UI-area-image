@@ -9,16 +9,18 @@ class Point:
         self.x = x
         self.y = y
 
-class Rectangle:
+class Polygon:
     def __init__(self, points=[]):
         self.points = points
+        self.area_px = None
+        self.area_m = None
         
     def get_point(self,ponto=Point()):
+        self.points.append(ponto)
+        print(f'{ponto.x}, {ponto.y}')
 
-        if len(self.points) < 4:
-            self.points.append(ponto)
-        else:
-            pass  
+    def reset_points(self):
+        self.points = []
 
 class Imagem:
     def __init__(self):
@@ -63,13 +65,14 @@ class FreeDraw:
         if len(self.points)>1:
             final_point = self.points[-1]
             initial_point = self.points[0]
-            # print(f'Ponto inicial ({initial_point.x},{initial_point.y})', f'Ponto final ({final_point.x},{final_point.y})')
+
             delta_x = initial_point.x - final_point.x
             delta_y = initial_point.y - final_point.y
+
+            x_dir = 1 if delta_x > 0 else -1 if delta_x < 0 else 0
             
-            x_dir = 1 if delta_x>0 else -1 if delta_x < 0 else 0
-            y_dir = 1 if delta_y>0 else -1 if delta_y < 0 else 0
-      
+            y_dir = 1 if delta_y > 0 else -1 if delta_y < 0 else 0
+            
             points_list = []
 
             for i in range(1,abs(delta_x)+1):
@@ -78,7 +81,7 @@ class FreeDraw:
             for j in range(1,abs(delta_y)):
                 ponto = Point(initial_point.x,final_point.y+j*y_dir)
                 points_list.append(ponto)
-            # print(f'O último ponto pego foi {points_list[-1].x},{points_list[-1].y}')
+            
             for k in points_list:
                 self.get_point(k)
    
@@ -91,6 +94,8 @@ class App:
         self.imagem = Imagem()
 
         self.freeDraw = FreeDraw()
+
+        self.polygon = Polygon()
 
         self.area = Area()
 
@@ -141,10 +146,10 @@ class App:
         # FRAME INPUT BUTTON
         self.frame_input_button = Frame(self.frame_input)
 
-        # SLIDERS
-        self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image(),length=125)
-        self.slider.set(30)
+        # # SLIDERS
+        # self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
+        # self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image(),length=125)
+        # self.slider.set(30)
 
         ### INPUTS, LABEL and LEDS
         self.dimension_input_lable = ttk.Label(self.frame_input_lable,text='Comprimentos conhecidos em mm',wraplength=150)
@@ -161,6 +166,10 @@ class App:
         self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
         self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command= lambda: self.C2_button_pressed())
         
+        # SLIDERS
+        self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
+        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: [self.render_image(), self.led_1.config(image=self.red_led_figure_1),self.led_2.config(image=self.red_led_figure_2)],length=125)
+        self.slider.set(30)
         
         self.input_value_1 = StringVar(self.root)
         self.dimension_input_1 = Entry(self.frame_input_led_1,textvariable=self.input_value_1, bd=3,width=15)
@@ -188,7 +197,7 @@ class App:
         self.frame_input_button.pack(side=TOP)
 
         self.slider_lable.pack(side=LEFT,anchor='w',pady=15)
-        self.slider.pack(side=LEFT,anchor='n')
+        self.slider.pack(side=LEFT,anchor='n',padx=1,pady=15)
 
         self.C1_button.pack(side=LEFT,padx=2)
         self.C2_button.pack(side=LEFT,padx=2)
@@ -204,40 +213,71 @@ class App:
         self.canvas = Canvas(self.frame)
 
         
-        self.button_free_draw = ttk.Button(
-            self.frame_buttons, text ='Desenho Livre', 
-            command = self.check_free_draw
-        )
+        self.button_free_draw = ttk.Button(self.frame_buttons, text ='Desenho Livre', command = self.check_free_draw)
 
-        self.button_free_draw.pack(side=TOP,pady=25)
-        self.slider.pack(side=TOP,padx=1,pady=15)
+        self.button_polygon = ttk.Button(self.frame_buttons, text ='Polígono', command = self.check_polygon)
+
+        # BOTÕES de tipo de desenho
+        self.button_free_draw.pack(side=TOP,pady=25,padx=5)
+        self.button_polygon.pack(side=TOP,pady=25)
+        
+    def check_polygon(self):
+        self.root.focus()
+        if self.area.area_ratio_m_proj_px_proj:
+            self.render_image()
+            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.')
+            self.polygon.reset_points()
+            self.root.bind('<Button-1>',self.create_polygon)
+            self.root.bind('<space>',lambda event: self.close_polygon())
+            # self.root.bind('<space>',lambda event: self.close_polygon())
+        else:
+            self.root.unbind('<Button-1>')
+            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+    
+    def create_polygon(self,event):
+        ponto = Point(event.x,event.y)
+        self.polygon.get_point(ponto)
+        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3)
+        if len(self.polygon.points)>1:
+            self.canvas.create_line(self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y)
+
+    def close_polygon(self):
+        self.unbind_all()
+        points_list = [(point.x,point.y) for point in self.polygon.points]
+        points_list.append((self.polygon.points[0].x, self.polygon.points[0].y))
+        self.canvas.create_line(points_list)
+        self.calcula_area_polygon()
+
 
     def check_free_draw(self):
+        self.root.focus()
         if self.area.area_ratio_m_proj_px_proj:
             self.render_image()
             self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes')
             self.freeDraw.reset_points()
-            # self.root.bind('<Double-Button>', lambda event: [self.root.bind('<Motion>',self.free_draw),self.freeDraw.get_point(Point(event.x,event.y))])
-            self.root.bind('<Double-Button>', lambda event: [self.root.bind('<Motion>',self.free_draw)])
-            
+            self.root.bind('<Double-Button>', lambda event: [self.root.bind('<Motion>',self.free_draw), self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
         else:
             self.root.unbind('<Motion>')
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
     
     def free_draw(self,event):
         if self.area.area_ratio_m_proj_px_proj:
-            self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_geom()]) 
+            # self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_geom()]) 
             x, y = event.x, event.y
             ponto = Point(x,y)
             print(x,y)
             self.freeDraw.get_point(ponto)
             if len(self.freeDraw.points)>1:
                 self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
-                # print(f'Pontos desenhados {self.freeDraw.points[-2].x},{self.freeDraw.points[-2].y}  e  {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y}')
         else:
             self.root.unbind('<Motion>')
             messagebox.showerror('','Você precisa definir os comprimentos conhecidos')
 
+    def close_free_draw(self):
+        self.unbind_all()
+        points_list = [(point.x,point.y) for point in self.freeDraw.points]
+        points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
+        self.canvas.create_line(points_list)
     
     def set_proj_plan_ratio(self):
         P1 = self.dimensionRatio_1.points[0]
@@ -267,7 +307,6 @@ class App:
 
         self.area.area_ratio_m_proj_px_proj = length_1 * length_2 / self.area.area_px_proj
 
-
     def C1_button_pressed(self):
         if self.input_value_1.get():
             self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
@@ -290,6 +329,7 @@ class App:
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
             self.root.unbind('<Button-1>')
+            self.root.focus()
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
@@ -316,6 +356,7 @@ class App:
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
             self.root.unbind('<Button-1>')
+            self.root.focus()
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
@@ -356,13 +397,8 @@ class App:
         else:
             pass
         
-    def close_free_draw(self):
-        self.root.unbind('<Double-Button>')
-        points_list = [(point.x,point.y) for point in self.freeDraw.points]
-        points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
-        self.canvas.create_line(points_list)
 
-    def calcula_area_geom(self):
+    def calcula_area_freeDraw(self):
         if len(self.freeDraw.points)>2 and self.area.area_ratio_m_proj_px_proj:
 
             areas_px=[]
@@ -382,9 +418,34 @@ class App:
             
             self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
             # print(f'Calcula area geom foi chamado, o ponto inicial é {self.freeDraw.points[0].x},{self.freeDraw.points[0].y} e o ponto Final é {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y} ')
-            
-                 
+    
+    def calcula_area_polygon(self):
+        if len(self.polygon.points)>2 and self.area.area_ratio_m_proj_px_proj:
 
+            areas_px=[]
+
+            for i,_ in enumerate(self.polygon.points):
+                delta_x_px = self.polygon.points[i].x - self.polygon.points[i-1].x
+                delta_y_px = self.polygon.points[i].y - self.polygon.points[i-1].y
+                y_1_px = min(self.polygon.points[i].y ,self.polygon.points[i-1].y)
+                area = delta_x_px * (y_1_px + delta_y_px/2)
+
+                areas_px.append(area)
+            
+            self.polygon.area_px = abs(sum(areas_px))
+            
+            area_meters = self.polygon.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
+            self.polygon.area_m = area_meters
+            
+            self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
+            # print(f'Calcula area geom foi chamado, o ponto inicial é {self.freeDraw.points[0].x},{self.freeDraw.points[0].y} e o ponto Final é {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y} ')
+    
+    def unbind_all(self):
+        self.root.unbind('<Button-1>')
+        self.root.unbind('<Double-Button>')
+        self.root.unbind('<Motion>')
+        self.root.unbind('<space>')
+        # self.root.unbind('<KeyPress>')
 myApp = App()
 
 myApp.root.mainloop()
