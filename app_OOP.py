@@ -67,20 +67,10 @@ class FreeDraw:
             delta_x = initial_point.x - final_point.x
             delta_y = initial_point.y - final_point.y
 
-            if delta_x > 0:
-                x_dir = 1
-            elif delta_x < 0:
-                x_dir = -1
-            elif delta_x == 0:
-                x_dir = 0
-
-            if delta_y > 0:
-                y_dir = 1
-            elif delta_y < 0:
-                y_dir = -1
-            elif delta_y == 0:
-                y_dir = 0
-
+            x_dir = 1 if delta_x > 0 else -1 if delta_x < 0 else 0
+            
+            y_dir = 1 if delta_y > 0 else -1 if delta_y < 0 else 0
+            
             points_list = []
 
             for i in range(1,abs(delta_x)+1):
