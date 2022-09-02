@@ -225,7 +225,7 @@ class App:
         self.root.focus()
         if self.area.area_ratio_m_proj_px_proj:
             self.render_image()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.')
+            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_points()
             self.root.bind('<Button-1>',self.create_polygon)
             self.root.bind('<space>',lambda event: self.close_polygon())
@@ -407,7 +407,7 @@ class App:
                 delta_x_px = self.freeDraw.points[i].x - self.freeDraw.points[i-1].x
                 delta_y_px = self.freeDraw.points[i].y - self.freeDraw.points[i-1].y
                 y_1_px = min(self.freeDraw.points[i].y ,self.freeDraw.points[i-1].y)
-                area = delta_x_px * (y_1_px + delta_y_px/2)
+                area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
 
                 areas_px.append(area)
             
@@ -428,8 +428,7 @@ class App:
                 delta_x_px = self.polygon.points[i].x - self.polygon.points[i-1].x
                 delta_y_px = self.polygon.points[i].y - self.polygon.points[i-1].y
                 y_1_px = min(self.polygon.points[i].y ,self.polygon.points[i-1].y)
-                area = delta_x_px * (y_1_px + delta_y_px/2)
-
+                area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
                 areas_px.append(area)
             
             self.polygon.area_px = abs(sum(areas_px))
