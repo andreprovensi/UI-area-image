@@ -220,6 +220,11 @@ class App:
         # BOTÕES de tipo de desenho
         self.button_free_draw.pack(side=TOP,pady=25,padx=5)
         self.button_polygon.pack(side=TOP,pady=25)
+
+        #FRAME CENTRAL
+        self.frame = Frame(self.root,relief=RIDGE,border=1)
+
+        self.frame.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
         
     def check_polygon(self):
         self.root.focus()
@@ -237,16 +242,21 @@ class App:
     def create_polygon(self,event):
         ponto = Point(event.x,event.y)
         self.polygon.get_point(ponto)
-        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3)
+        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2)
         if len(self.polygon.points)>1:
             self.canvas.create_line(self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y)
 
     def close_polygon(self):
-        self.unbind_all()
-        points_list = [(point.x,point.y) for point in self.polygon.points]
-        points_list.append((self.polygon.points[0].x, self.polygon.points[0].y))
-        self.canvas.create_line(points_list)
-        self.calcula_area_polygon()
+        if len(self.polygon.points)>=3:
+            self.unbind_all()
+            points_list = [(point.x,point.y) for point in self.polygon.points]
+            points_list.append((self.polygon.points[0].x, self.polygon.points[0].y))
+            self.canvas.create_line(points_list)
+            self.calcula_area_polygon()
+        else:
+            self.unbind_all()
+            self.polygon.reset_points()
+            self.render_image()
 
 
     def check_free_draw(self):
@@ -380,11 +390,11 @@ class App:
 
             self.imagem.img = ImageTk.PhotoImage(picture.resize((picture_w_resized, picture_h_resized),resample=Image.LANCZOS))
 
-            self.frame.destroy()
+            # self.frame.destroy()
             
-            self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
+            # self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
 
-            self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
+            # self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
             
             self.canvas.destroy()
                    
