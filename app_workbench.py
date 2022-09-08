@@ -220,33 +220,43 @@ class App:
         # BOTÕES de tipo de desenho
         self.button_free_draw.pack(side=TOP,pady=25,padx=5)
         self.button_polygon.pack(side=TOP,pady=25)
+
+        #FRAME CENTRAL
+        self.frame = Frame(self.root,relief=RIDGE,border=1)
+
+        self.frame.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
         
     def check_polygon(self):
         self.root.focus()
         if self.area.area_ratio_m_proj_px_proj:
             self.render_image()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.')
+            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_points()
-            self.root.bind('<Button-1>',self.create_polygon)
-            self.root.bind('<space>',lambda event: self.close_polygon())
+            self.canvas.bind('<Button-1>',self.create_polygon)
+            self.canvas.bind('<space>',lambda event: self.close_polygon())
             # self.root.bind('<space>',lambda event: self.close_polygon())
         else:
-            self.root.unbind('<Button-1>')
+            self.canvas.unbind('<Button-1>')
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
     
     def create_polygon(self,event):
         ponto = Point(event.x,event.y)
         self.polygon.get_point(ponto)
-        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3)
+        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2)
         if len(self.polygon.points)>1:
             self.canvas.create_line(self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y)
 
     def close_polygon(self):
-        self.unbind_all()
-        points_list = [(point.x,point.y) for point in self.polygon.points]
-        points_list.append((self.polygon.points[0].x, self.polygon.points[0].y))
-        self.canvas.create_line(points_list)
-        self.calcula_area_polygon()
+        if len(self.polygon.points)>=3:
+            self.unbind_all()
+            points_list = [(point.x,point.y) for point in self.polygon.points]
+            points_list.append((self.polygon.points[0].x, self.polygon.points[0].y))
+            self.canvas.create_line(points_list)
+            self.calcula_area_polygon()
+        else:
+            self.unbind_all()
+            self.polygon.reset_points()
+            self.render_image()
 
 
     def check_free_draw(self):
@@ -255,9 +265,9 @@ class App:
             self.render_image()
             self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes')
             self.freeDraw.reset_points()
-            self.root.bind('<Double-Button>', lambda event: [self.root.bind('<Motion>',self.free_draw), self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
+            self.canvas.bind('<Double-Button>', lambda event: [self.root.bind('<Motion>',self.free_draw), self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
         else:
-            self.root.unbind('<Motion>')
+            self.canvas.unbind('<Motion>')
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
     
     def free_draw(self,event):
@@ -270,7 +280,7 @@ class App:
             if len(self.freeDraw.points)>1:
                 self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y)
         else:
-            self.root.unbind('<Motion>')
+            self.canvas.unbind('<Motion>')
             messagebox.showerror('','Você precisa definir os comprimentos conhecidos')
 
     def close_free_draw(self):
@@ -313,7 +323,7 @@ class App:
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
-            self.root.bind('<Button-1>', lambda event: self.get_C1_points(event))
+            self.canvas.bind('<Button-1>', self.get_C1_points)
             
         else:
             messagebox.showerror('','Você precisa digitar o comprimento conhecido')
@@ -328,11 +338,12 @@ class App:
         
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
-            self.root.unbind('<Button-1>')
+            self.canvas.unbind('<Button-1>')
             self.root.focus()
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
+            self.unbind_all()
 
     def C2_button_pressed(self):
         if self.input_value_2.get():
@@ -340,7 +351,7 @@ class App:
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
-            self.root.bind('<Button-1>', lambda event: self.get_C2_points(event))
+            self.canvas.bind('<Button-1>',self.get_C2_points)
             
         else:
             messagebox.showerror('','Você precisa digitar o comprimento conhecido')
@@ -355,11 +366,12 @@ class App:
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
-            self.root.unbind('<Button-1>')
+            self.canvas.unbind('<Button-1>')
             self.root.focus()
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
+            self.unbind_all()
 
 
     def open_image(self):
@@ -380,11 +392,11 @@ class App:
 
             self.imagem.img = ImageTk.PhotoImage(picture.resize((picture_w_resized, picture_h_resized),resample=Image.LANCZOS))
 
-            self.frame.destroy()
+            # self.frame.destroy()
             
-            self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
+            # self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
 
-            self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
+            # self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
             
             self.canvas.destroy()
                    
@@ -407,7 +419,7 @@ class App:
                 delta_x_px = self.freeDraw.points[i].x - self.freeDraw.points[i-1].x
                 delta_y_px = self.freeDraw.points[i].y - self.freeDraw.points[i-1].y
                 y_1_px = min(self.freeDraw.points[i].y ,self.freeDraw.points[i-1].y)
-                area = delta_x_px * (y_1_px + delta_y_px/2)
+                area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
 
                 areas_px.append(area)
             
@@ -428,8 +440,7 @@ class App:
                 delta_x_px = self.polygon.points[i].x - self.polygon.points[i-1].x
                 delta_y_px = self.polygon.points[i].y - self.polygon.points[i-1].y
                 y_1_px = min(self.polygon.points[i].y ,self.polygon.points[i-1].y)
-                area = delta_x_px * (y_1_px + delta_y_px/2)
-
+                area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
                 areas_px.append(area)
             
             self.polygon.area_px = abs(sum(areas_px))
@@ -441,10 +452,10 @@ class App:
             # print(f'Calcula area geom foi chamado, o ponto inicial é {self.freeDraw.points[0].x},{self.freeDraw.points[0].y} e o ponto Final é {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y} ')
     
     def unbind_all(self):
-        self.root.unbind('<Button-1>')
-        self.root.unbind('<Double-Button>')
-        self.root.unbind('<Motion>')
-        self.root.unbind('<space>')
+        self.canvas.unbind('<Button-1>')
+        self.canvas.unbind('<Double-Button>')
+        self.canvas.unbind('<Motion>')
+        self.canvas.unbind('<space>')
         # self.root.unbind('<KeyPress>')
 myApp = App()
 

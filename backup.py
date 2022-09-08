@@ -17,8 +17,6 @@ class Rectangle:
 
         if len(self.points) < 4:
             self.points.append(ponto)
-        else:
-            pass  
 
 class Imagem:
     def __init__(self):
@@ -82,10 +80,6 @@ class FreeDraw:
             
             for k in points_list:
                 self.get_point(k)
-
-        else:
-            pass
-
    
 class App:
     def __init__(self):
@@ -330,7 +324,6 @@ class App:
         else:
             messagebox.showerror('','Você precisa digitar o comprimento conhecido')
             
-        
     def get_C2_points(self, event):   
         ponto=Point(event.x,event.y)
         
@@ -377,9 +370,6 @@ class App:
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
             
             self.canvas.pack(side=TOP, anchor='n')
-
-        else:
-            pass
         
     def close_free_draw(self):
         points_list = [(point.x,point.y) for point in self.freeDraw.points]
