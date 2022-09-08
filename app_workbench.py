@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk, messagebox
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
-
+from scipy.interpolate import CubicSpline
 
 class Point:
     def __init__(self, x=0.0, y=0.0):
@@ -146,11 +146,6 @@ class App:
         # FRAME INPUT BUTTON
         self.frame_input_button = Frame(self.frame_input)
 
-        # # SLIDERS
-        # self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        # self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image(),length=125)
-        # self.slider.set(30)
-
         ### INPUTS, LABEL and LEDS
         self.dimension_input_lable = ttk.Label(self.frame_input_lable,text='Comprimentos conhecidos em mm',wraplength=150)
 
@@ -168,7 +163,7 @@ class App:
         
         # SLIDERS
         self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: [self.render_image(), self.led_1.config(image=self.red_led_figure_1),self.led_2.config(image=self.red_led_figure_2)],length=125)
+        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=200, orient='horizontal', command = lambda event: [self.render_image(), self.led_1.config(image=self.red_led_figure_1),self.led_2.config(image=self.red_led_figure_2)],length=125)
         self.slider.set(30)
         
         self.input_value_1 = StringVar(self.root)
@@ -225,6 +220,15 @@ class App:
         self.frame = Frame(self.root,relief=RIDGE,border=1)
 
         self.frame.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
+
+        self.vbar = Scrollbar(self.frame, orient='vertical')
+
+        self.hbar = Scrollbar(self.frame, orient='horizontal')
+
+        self.vbar.pack(side=LEFT,fill=Y)
+
+        self.hbar.pack(side=BOTTOM,fill=X)
+
         
     def check_polygon(self):
         self.root.focus()
@@ -233,14 +237,13 @@ class App:
             self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_points()
             self.canvas.bind('<Button-1>',self.create_polygon)
-            self.canvas.bind('<space>',lambda event: self.close_polygon())
-            # self.root.bind('<space>',lambda event: self.close_polygon())
+            self.root.bind('<space>',lambda event: self.close_polygon())
         else:
             self.canvas.unbind('<Button-1>')
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
     
     def create_polygon(self,event):
-        ponto = Point(event.x,event.y)
+        ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         self.polygon.get_point(ponto)
         self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2)
         if len(self.polygon.points)>1:
@@ -330,11 +333,11 @@ class App:
             
         
     def get_C1_points(self, event):   
-        ponto=Point(event.x,event.y)
+        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
         
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
-            self.canvas.create_oval((event.x,event.y,event.x,event.y),fill='black',width=5)
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5)
         
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
@@ -347,7 +350,7 @@ class App:
 
     def C2_button_pressed(self):
         if self.input_value_2.get():
-            self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
+            # self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
@@ -358,11 +361,11 @@ class App:
             
         
     def get_C2_points(self, event):   
-        ponto=Point(event.x,event.y)
+        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
-            self.canvas.create_oval((event.x,event.y,event.x,event.y),fill='black',width=5)
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5)
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
@@ -396,18 +399,25 @@ class App:
             
             # self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
 
-            # self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)
-            
+            # self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)    
+          
             self.canvas.destroy()
                    
-            self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized)
+            self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized,scrollregion=(0,0,picture_w_resized,picture_h_resized))
 
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
-            
+
+            self.hbar.config(command=self.canvas.xview)
+
+            self.vbar.config(command=self.canvas.yview)
+
+            self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
+
             self.canvas.pack(side=TOP, anchor='n')
 
         else:
             pass
+            
         
 
     def calcula_area_freeDraw(self):
@@ -451,11 +461,18 @@ class App:
             self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
             # print(f'Calcula area geom foi chamado, o ponto inicial é {self.freeDraw.points[0].x},{self.freeDraw.points[0].y} e o ponto Final é {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y} ')
     
+    def spline_first(self):
+        x_t = [ponto.x for ponto in self.polygon.points]
+        y_t = [ponto.y for ponto in self.polygon.points]
+
+        cubic_spline = CubicSpline(x_t,y_t)
+        pass
+
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
         self.canvas.unbind('<Double-Button>')
         self.canvas.unbind('<Motion>')
-        self.canvas.unbind('<space>')
+        self.root.unbind('<space>')
         # self.root.unbind('<KeyPress>')
 myApp = App()
 

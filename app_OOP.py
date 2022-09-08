@@ -233,7 +233,7 @@ class App:
             self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_points()
             self.canvas.bind('<Button-1>',self.create_polygon)
-            self.canvas.bind('<space>',lambda event: self.close_polygon())
+            self.root.bind('<space>',lambda event: self.close_polygon())
             # self.root.bind('<space>',lambda event: self.close_polygon())
         else:
             self.canvas.unbind('<Button-1>')
@@ -455,7 +455,7 @@ class App:
         self.canvas.unbind('<Button-1>')
         self.canvas.unbind('<Double-Button>')
         self.canvas.unbind('<Motion>')
-        self.canvas.unbind('<space>')
+        self.root.unbind('<space>')
         # self.root.unbind('<KeyPress>')
 myApp = App()
 
