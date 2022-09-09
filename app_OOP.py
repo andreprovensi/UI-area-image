@@ -241,8 +241,35 @@ class App:
 
         self.vbar.pack(side=LEFT,fill=Y)
         self.hbar.pack(side=BOTTOM,fill=X)
-
         
+    def check_free_draw(self):
+        self.root.focus()
+        if self.area.area_ratio_m_proj_px_proj:
+            self.clear_drawings()
+            self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes')
+            self.freeDraw.reset_points()
+            # self.canvas.bind('<Double-Button>', lambda event: [self.canvas.bind('<Motion>',self.free_draw), self.canvas.bind('<Double-Button>', lambda event: [self.canvas.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
+            self.canvas.bind('<Double-Button>', lambda event: [self.canvas.bind('<Motion>',self.free_draw), self.canvas.bind('<Double-Button>', lambda event: [self.canvas.unbind('<Motion>'),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
+        else:
+            self.canvas.unbind('<Motion>')
+            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+    
+    def free_draw(self,event):
+        if self.area.area_ratio_m_proj_px_proj:
+            x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+            ponto = Point(x,y)
+            print(x,y)
+            self.freeDraw.get_point(ponto)
+            if len(self.freeDraw.points)>1:
+                self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y,tags=self.tag_freeDraw)
+        else:
+            self.canvas.unbind('<Motion>')
+            messagebox.showerror('','Você precisa definir os comprimentos conhecidos')
+
+    def close_free_draw(self):
+        self.unbind_all()
+        self.canvas.create_line(self.freeDraw.points[-1].x,self.freeDraw.points[-1].y,self.freeDraw.points[0].x,self.freeDraw.points[0].y,tags=self.tag_freeDraw)
+    
     def check_polygon(self):
         self.root.focus()
         if self.area.area_ratio_m_proj_px_proj:
@@ -261,8 +288,13 @@ class App:
         ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         self.polygon.get_point(ponto)
         self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2,tags=self.tag_polygon)
-        if len(self.polygon.points)>1:
-            self.canvas.create_line(self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y,tags=self.tag_polygon)
+        if len(self.polygon.points) > 3:
+            self.canvas.delete(self.tag_polygon)
+            self.canvas.create_line([(point.x,point.y) for point in self.polygon.points],smooth=True,splinesteps=3,tags=self.tag_polygon)
+        # if len(self.polygon.points)%3 == 0:
+        #     self.canvas.create_line(self.polygon.points[-3].x, self.polygon.points[-3].y,self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y,tags=self.tag_polygon,smooth=True,splinesteps=2)
+        # if len(self.polygon.points)>1:
+        #     self.canvas.create_line(self.polygon.points[-2].x, self.polygon.points[-2].y, self.polygon.points[-1].x, self.polygon.points[-1].y,tags=self.tag_polygon)
 
     def close_polygon(self):
         if len(self.polygon.points)>=3:
@@ -275,37 +307,6 @@ class App:
             # self.render_image()
 
 
-    def check_free_draw(self):
-        self.root.focus()
-        if self.area.area_ratio_m_proj_px_proj:
-            # self.render_image()
-            self.clear_drawings()
-            self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes')
-            self.freeDraw.reset_points()
-            self.canvas.bind('<Double-Button>', lambda event: [self.canvas.bind('<Motion>',self.free_draw), self.canvas.bind('<Double-Button>', lambda event: [self.canvas.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_freeDraw()]) ])
-        else:
-            self.canvas.unbind('<Motion>')
-            messagebox.showerror('','Você precisa definir o comprimento conhecido')
-    
-    def free_draw(self,event):
-        if self.area.area_ratio_m_proj_px_proj:
-            # self.root.bind('<Double-Button>', lambda event: [self.root.unbind('<Motion>'),self.freeDraw.closing_points_free_draw(),self.close_free_draw(),self.calcula_area_geom()]) 
-            x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-            ponto = Point(x,y)
-            print(x,y)
-            self.freeDraw.get_point(ponto)
-            if len(self.freeDraw.points)>1:
-                self.canvas.create_line(self.freeDraw.points[-2].x, self.freeDraw.points[-2].y, self.freeDraw.points[-1].x, self.freeDraw.points[-1].y,tags=self.tag_freeDraw)
-        else:
-            self.canvas.unbind('<Motion>')
-            messagebox.showerror('','Você precisa definir os comprimentos conhecidos')
-
-    def close_free_draw(self):
-        self.unbind_all()
-        points_list = [(point.x,point.y) for point in self.freeDraw.points]
-        points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
-        self.canvas.create_line(points_list,tags=self.tag_freeDraw)
-    
     def set_proj_plan_ratio(self):
         P1 = self.dimensionRatio_1.points[0]
         P2 = self.dimensionRatio_1.points[1]
@@ -351,8 +352,6 @@ class App:
         
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
-            # tag=(f'C1Point{len(self.dimensionRatio_1.points)}')
-            # self.tags_list.append(tag)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5,tags=self.tag_dimension)
         
         if len(self.dimensionRatio_1.points) == 2:
@@ -382,8 +381,6 @@ class App:
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
-            # tag=(f'C2Point{len(self.dimensionRatio_2.points)}')
-            # self.tags_list.append(tag)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5, tags=self.tag_dimension)
         
         if len(self.dimensionRatio_2.points) == 2:
@@ -435,11 +432,6 @@ class App:
             self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
 
             self.canvas.pack(side=TOP, anchor='n')
-
-        else:
-            pass
-            
-        
 
     def calcula_area_freeDraw(self):
         if len(self.freeDraw.points)>2 and self.area.area_ratio_m_proj_px_proj:
