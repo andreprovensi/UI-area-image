@@ -257,12 +257,6 @@ class App:
         self.tag_spline = 'tagSpline'
         self.tag_point_spline = 'tagPointSpline'
 
-        # self.hbar.config(command=self.canvas.xview)
-
-        # self.vbar.config(command=self.canvas.yview)
-
-        # self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
-
         self.vbar.pack(side=LEFT,fill=Y)
         self.hbar.pack(side=BOTTOM,fill=X)
         
