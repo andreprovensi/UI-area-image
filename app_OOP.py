@@ -74,32 +74,7 @@ class FreeDraw:
 
     def reset_points(self):
         self.points = []
-    
-    def closing_points_free_draw(self):
-        
-        if len(self.points)>1:
-            final_point = self.points[-1]
-            initial_point = self.points[0]
 
-            delta_x = initial_point.x - final_point.x
-            delta_y = initial_point.y - final_point.y
-
-            x_dir = 1 if delta_x > 0 else -1 if delta_x < 0 else 0
-            
-            y_dir = 1 if delta_y > 0 else -1 if delta_y < 0 else 0
-            
-            points_list = []
-
-            for i in range(1,abs(int(delta_x))+1):
-                ponto = Point(final_point.x+i*x_dir,final_point.y)
-                points_list.append(ponto)
-            for j in range(1,abs(int(delta_y))):
-                ponto = Point(initial_point.x,final_point.y+j*y_dir)
-                points_list.append(ponto)
-            
-            for k in points_list:
-                self.get_point(k)
-   
 class App:
     def __init__(self):
 
