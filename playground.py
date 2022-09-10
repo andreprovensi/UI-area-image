@@ -52,9 +52,21 @@ a = '+'
 
 mylist = [1,2,1,2]
 
-   
-        
-        
+
+import numpy as np
+
+
+aa = [1,2,3,4]
+
+bb = aa
+
+aa.pop()
+
+
+print(bb)
+print(list(np.arange(1,10,0.5)))
+
+
         
         
         
