@@ -114,8 +114,6 @@ class App:
         self.frame_buttons = Frame(self.root,relief=RAISED,borderwidth=3)
         self.frame_buttons.pack(side=RIGHT,fill=Y,expand=False)
 
-        # self.frame.pack(side=RIGHT,fill=BOTH)
-
         # Frame e componentes para a definição do tamanho da imagem e da razão mm/pixel
 
         self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2,width=135)
@@ -137,11 +135,6 @@ class App:
 
         # FRAME INPUT BUTTON
         self.frame_input_button = Frame(self.frame_input)
-
-        # # SLIDERS
-        # self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        # self.slider = ttk.Scale(self.frame_zoom,from_=1, to=100, orient='horizontal', command = lambda event: self.render_image(),length=125)
-        # self.slider.set(30)
 
         ### INPUTS, LABEL and LEDS
         self.dimension_input_lable = ttk.Label(self.frame_input_lable,text='Comprimentos conhecidos em mm',wraplength=150)
@@ -299,8 +292,6 @@ class App:
 
             # delta_t = np.linspace(0,len(x_t)-1,1000)
             delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
-            
-            
 
             points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
 
@@ -308,14 +299,13 @@ class App:
        
        
     def close_spline(self):
+        self.unbind_all()
+
         if len(self.spline.points)>3:
-            self.unbind_all()
             self.canvas.create_line(self.spline.points[-1].x, self.spline.points[-1].y, self.spline.points[0].x, self.spline.points[0].y,tags=self.tag_spline) 
             self.calcula_area_spline()   # Definir a função que calcula a area da spline
         else:
-            self.unbind_all()
             self.spline.reset_points()
-            # self.render_image()
 
     def check_free_draw(self):
         self.root.focus()
@@ -350,9 +340,7 @@ class App:
         P2 = self.dimensionRatio_1.points[1]
         P3 = self.dimensionRatio_2.points[0]
         P4 = self.dimensionRatio_2.points[1]
- 
-        # Definir os pontos com máximo delta_x e delta_y entre P0 e os outros pontos 
-                
+                 
         vetor_1 = Point(P2.x - P1.x, P2.y - P1.y)
 
         vetor_2 = Point(P4.x - P3.x, P4.y - P3.y)
@@ -367,15 +355,12 @@ class App:
 
         length_2 = self.dimensionRatio_2.length 
 
-        # print(f'O comprimento 1 é de {length_1} e o comprimento 2 de {length_2}')
-
         self.area.area_m_proj = length_1 * length_2 
 
         self.area.area_ratio_m_proj_px_proj = length_1 * length_2 / self.area.area_px_proj
 
     def C1_button_pressed(self):
         if self.input_value_1.get():
-            # self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
@@ -404,7 +389,6 @@ class App:
 
     def C2_button_pressed(self):
         if self.input_value_2.get():
-            # self.render_image() #Caso já tenha algo desenhado, uma nova imagem é renderizada ao apertar o botão
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
@@ -447,19 +431,11 @@ class App:
 
             picture_w_resized, picture_h_resized = int(picture_w * self.slider.get()/100), int(picture_h * self.slider.get()/100) 
 
-            self.imagem.img = ImageTk.PhotoImage(picture.resize((picture_w_resized, picture_h_resized),resample=Image.LANCZOS))
-
-            # self.frame.destroy()
-            
-            # self.frame = Frame(self.root,width=picture_w_resized,height=picture_h_resized)
-
-            # self.frame.pack(side=TOP,anchor='n', padx = 50,fill=BOTH, expand=True)    
+            self.imagem.img = ImageTk.PhotoImage(picture.resize((picture_w_resized, picture_h_resized),resample=Image.LANCZOS))  
           
             self.canvas.destroy()
                    
             self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized,scrollregion=(0,0,picture_w_resized,picture_h_resized))
-
-            # self.canvas.config(width=picture_w_resized, height=picture_h_resized,scrollregion=(0,0,picture_w_resized,picture_h_resized))
 
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
 
@@ -521,14 +497,10 @@ class App:
             x_t_spline = CubicSpline(list(range(0,len(x_t))),x_t)
             y_t_spline = CubicSpline(list(range(0,len(y_t))),y_t)
 
-            delta_t = np.linspace(0,len(x_t)-1,1000)
-            points_list = []
-            for t in delta_t:
-                x = x_t_spline(t)
-                y = y_t_spline(t)
+            # delta_t = np.linspace(0,len(x_t)-1,1000)
+            delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
 
-                ponto = Point(x,y)
-                points_list.append(ponto)
+            points_list = [Point(x_t_spline(t),y_t_spline(t)) for t in delta_t]
 
             areas_px=[]
 
@@ -541,13 +513,11 @@ class App:
 
             area_px = abs(sum(areas_px))
 
-            area_meters = area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
+            self.spline.area_px = area_px
 
-            self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
+            self.spline.area_m = self.spline.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
 
-            # points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
-
-            # self.canvas.create_line(points_list_spline,fill='blue')
+            self.action_box.config(text=f'A área da figura é {self.spline.area_m:.2f} mm²')
 
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
