@@ -143,13 +143,13 @@ class App:
         self.green_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg'))
         self.red_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
         self.led_1 = ttk.Label(self.frame_input_led_1, image=self.red_led_figure_1 )
-        self.C1_button = ttk.Button(self.frame_input_led_1, text='C1', width=4, command= lambda: self.C1_button_pressed())
+        self.C1_button = ttk.Button(self.frame_input_led_1, text='C1', width=4, command=self.C1_button_pressed)
         
         # LENGTH 2
         self.green_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg'))
         self.red_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
         self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
-        self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command= lambda: self.C2_button_pressed())
+        self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command=self.C2_button_pressed)
         
         # SLIDERS
         self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
@@ -161,12 +161,6 @@ class App:
         
         self.input_value_2 = StringVar(self.root)
         self.dimension_input_2 = Entry(self.frame_input_led_2,textvariable=self.input_value_2, bd=3,width=15)
-        
-
-        self.button_set_dimension = ttk.Button(
-            self.frame_input_button,text='Selecionar pontos do\ncomprimento',
-            command= lambda: self.C1_button_pressed()
-        )
         
         # Action box
         self.action_box = Message(self.frame_img_prop,text='- Carregue uma imagem\n\n- Ajuste o zoom\n\n- Digite os valores dos comprimentos conhecidos\n\n- Aperte C1 para definir os pontos do comprimento 1\n\n- Aperte C2 para definir os pontos do comprimento 2\n\n- Quando os dois leds ficarem verdes, aperte em desenho livre',bg='light yellow', anchor='nw',justify=LEFT, width=150)
