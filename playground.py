@@ -1,73 +1,23 @@
 
-string1 = 'ab'
 
-string2 = 'abcccccca'
+def countup(n):
 
-soma = 0
-
-lista_soma = []
-
-for char1 in string1:
-
-    soma=0
-    for char2 in string2:
-
-        if char1 == char2:
-            soma+=1
-    lista_soma.append(soma)
+    if n<1:
+        return []
+    else:
+        
+        countArray = countup(n-1)
+        print('depois',countArray)
+        countArray.append(n)
+        return countArray
 
 
-n = min(lista_soma)
 
-print(n)
+countup(3)
 
-
-forb = ['(]','(}','[)', '[}', '{)', '{]']
-
-sequence = '([([)])[]'
-state = None
-for index, value in enumerate(sequence):
-
-    if index != len(sequence)-1:
-
-        if sequence[index]+sequence[index+1] in forb:
-            state = False
-            break
-
-        else:
-            state = True
-
-print(state)    
-
-sequence = [1,2,3,4,5]
-
-
-new_list = sequence.copy()
-
-new_list.pop(2)
-
-print(bool(1))
-
-a = '+'
-
-mylist = [1,2,1,2]
+a =1
 
 
 import numpy as np
 
-
-aa = [1,2,3,4]
-
-bb = aa
-
-aa.pop()
-
-
-print(bb)
-print(list(np.arange(1,10,0.5)))
-
-
-        
-        
-        
-
+print(np.linspace(0,50,50))
