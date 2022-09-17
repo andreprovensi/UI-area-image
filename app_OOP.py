@@ -513,6 +513,8 @@ class App:
         self.text_area_polygon.delete('1.0',END)
         self.text_area_spline.delete('1.0',END)
 
+        self.action_box.config(text='1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão')      
+
         self.area = Area()
 
     def render_image(self):
