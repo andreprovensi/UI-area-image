@@ -8,6 +8,7 @@ pillow = "*"
 ipykernel = "*"
 scipy = "*"
 matplotlib = "*"
+numpy = "*"
 
 [dev-packages]
 
