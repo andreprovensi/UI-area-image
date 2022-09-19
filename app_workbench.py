@@ -176,9 +176,9 @@ class App:
         
         # SLIDERS e CHECK BOX
         self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=200, orient='horizontal', command = lambda event: [self.render_image(), self.led_1.config(image=self.red_led_figure_1),self.led_2.config(image=self.red_led_figure_2)],length=125)
+        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=200, orient='horizontal', command =lambda event: self.set_zoom() ,length=125)
         self.slider.set(30)
-        
+
         self.on_off = StringVar(self.root)
         self.check_box = ttk.Checkbutton(self.frame_checkbox, text='Fixar zoom', variable=self.on_off, onvalue='disabled', offvalue='enabled', command=lambda: [self.slider.config(state=self.on_off.get()),self.root.focus()])
         
@@ -705,6 +705,22 @@ class App:
         self.canvas.delete(self.tag_polygon)
         self.canvas.delete(self.tag_spline)
         self.canvas.delete(self.tag_point_spline)
+
+    def set_zoom(self):
+
+        if self.imagem.src_img:
+            self.render_image()
+            self.led_1.config(image=self.red_led_figure_1)
+            self.led_2.config(image=self.red_led_figure_2)
+            # self.freeDraw = FreeDraw()
+            # self.polygon = Polygon()
+            # self.spline = Spline()
+            self.clear_points_entities()
+            self.input_value_1.set('') 
+            self.input_value_2.set('')
+            self.text_area_freeDraw.delete('1.0',END)
+            self.text_area_polygon.delete('1.0',END)
+            self.text_area_spline.delete('1.0',END)
 
 myApp = App()
 
