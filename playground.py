@@ -97,4 +97,38 @@ else{return true}
 console.log(telephoneCheck('5555555555'))
 
 // telephoneCheck('12 5555555555');
+                              
+                              
+-------------------------------------------
+ function checkCashRegister(price, cash, cid) {
+
+const change = cash-price;
+const cashInDrawer = cid.reduce((acc,arr)=>acc+arr[1],0);
+let status;
+let changeStatus;
+
+if(cashInDrawer>change){status="OPEN";}
+else if(cashInDrawer<change){status="INSUFFICIENT_FUNDS";changeStatus=[]}
+else if(cashInDrawer === change){status="CLOSED";}
+
+let centenas;
+let dezenas;
+let unidades;
+let frCentena;
+let frUnidade;
+
+centenas = Math.floor(change/100);
+dezenas = Math.floor((change-centenas*100)/10)
+unidades = Math.floor((change-centenas*100-dezenas*10))
+frCentena = Math.floor((change-centenas*100-dezenas*10-unidades)*10)
+frUnidade = Math.floor((change-centenas*100-dezenas*10-unidades)*10)
+
+
+console.log(change,frCentena)
+
+console.log(change,cashInDrawer)
+
+}
+
+checkCashRegister(19.51, 20, [["PENNY", 1.01], ["NICKEL", 2.05], ["DIME", 3.1], ["QUARTER", 4.25], ["ONE", 90], ["FIVE", 55], ["TEN", 20], ["TWENTY", 60], ["ONE HUNDRED", 100]]);
 
