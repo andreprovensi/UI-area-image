@@ -109,23 +109,12 @@ let cashInDrawer = cid.reduce((acc,arr)=>acc+arr[1],0);
 cashInDrawer*=1000
 cashInDrawer = Math.round(cashInDrawer)/1000
 let status;
-let changeStatus;
+
 
 if(cashInDrawer<change){return {status:"INSUFFICIENT_FUNDS",change:[]}}
 else if(cashInDrawer>change){status="OPEN";}
 else if(cashInDrawer === change){status="CLOSED";}
 
-let centenas;
-let dezenas;
-let unidades;
-let frCentena;
-let frUnidade;
-
-centenas = Math.floor(change/100);
-dezenas = Math.floor((change-centenas*100)/10)
-unidades = Math.floor((change-centenas*100-dezenas*10))
-frCentena = Math.floor((change-centenas*100-dezenas*10-unidades)*10)
-frUnidade = Math.round((change-centenas*100-dezenas*10-unidades-frCentena/10)*100)
 
 const arr100=[];
 const arr20=[];
@@ -137,47 +126,66 @@ const arr010=[];
 const arr005=[];
 const arr001=[];
 
-// console.log(change,frUnidade)
+let n001=Math.round(cid[0][1]/0.01);
+let n005=Math.round(cid[1][1]/0.05);
+let n010=Math.round(cid[2][1]/0.1);
+let n025=Math.round(cid[3][1]/0.25);
+let n1=Math.round(cid[4][1]);
+let n5=Math.round(cid[5][1]/5);
+let n10=Math.round(cid[6][1]/10);
+let n20=Math.round(cid[7][1]/20);
+let n100=Math.round(cid[8][1]/100);
 
 let valor = Math.abs(change);
 let cont=0;
-while(valor>=0 && cont<2500){
+
+while(valor>=0 && cont<25000){
   cont++
-  if(valor>=100){
+  valor = Math.round(valor*1000)/1000;
+  if(valor>=100 && n100>0){
     arr100.push(1)
     valor-=100
+    n100--
   }
-  else if(valor<100 && valor>=20){
+  else if(valor>=20 && n20>0){
     arr20.push(1);
     valor-=20
+    n20--
   }
-  else if(valor<20 && valor>=10){
+  else if(valor>=10 && n10>0){
     arr10.push(1);
     valor-=10
+    n10--
   }
-  else if(valor<10 && valor>=5){
+  else if( valor>=5 && n5>0){
     arr5.push(1);
     valor-=5
+    n5--
   }
-  else if(valor<5 && valor>=1){
+  else if(valor>=1 && n1>0){
     arr1.push(1);
     valor-=1
+    n1--
   }
-  else if(valor<1 && valor>=0.25){
+  else if(valor>=0.25 && n025>0){
     arr025.push(1);
     valor-=0.25
+    n025--
   }
-  else if(valor<0.25 && valor>=0.1){
+  else if(valor>=0.1 && n010>0){
     arr010.push(1);
     valor-=0.1
+    n010--
   }
-  else if(valor<0.1 && valor>=0.05){
+  else if(valor>=0.05 && n005>0){
     arr005.push(1);
     valor-=0.05
+    n005--
   }
-  else if(valor<0.05 && valor>=0.01){
+  else if(valor>=0.01 && n001>0){
     arr001.push(1);
     valor-=0.01
+    n001--
   }
 }
 
@@ -195,13 +203,21 @@ const arrStatusChange = [
 ];
 
 arrStatusChange.sort((a,b)=>b[1]-a[1])
-// console.log(arrStatusChange)
 
-const obj = {status:status,change:arrStatusChange}
-console.log(change)
-console.log(obj)
+const possibleChange = arrStatusChange.reduce((acc,arr)=>acc+arr[1],0);
+
+if(possibleChange < change){return {status:"INSUFFICIENT_FUNDS",change:[]}}
+
+const obj = {status:status,change:cid}
+
+if(status==="CLOSED"){return obj}
+
+
+const filterdArrStatusChange = arrStatusChange.filter(arr=>arr[1]!==0);
+
+return {status:status,change:filterdArrStatusChange}
+
 
 }
 
-checkCashRegister(19.5, 20, [["PENNY", 0.5], ["NICKEL", 0], ["DIME", 0], ["QUARTER", 0], ["ONE", 0], ["FIVE", 0], ["TEN", 0], ["TWENTY", 0], ["ONE HUNDRED", 0]])
-
+checkCashRegister(19.5, 20, [["PENNY", 0.01], ["NICKEL", 0], ["DIME", 0], ["QUARTER", 0], ["ONE", 1], ["FIVE", 0], ["TEN", 0], ["TWENTY", 0], ["ONE HUNDRED", 0]])
