@@ -58,3 +58,43 @@ function rot13(str) {
 }
 
 rot13("GUR DHVPX OEBJA SBK WHZCF BIRE GUR YNML QBT.");
+
+---------------------------
+
+function telephoneCheck(str) {
+
+// ver se passa no formato sem o código internacional
+
+// se passar, ver se o código internacional é igual a 1
+
+const regex1=/^\d{3}-\d{3}-\d{4}$/;
+const regex1Int=/^(1\s{0,1})(\d{3}-\d{3}-\d{4})$/;
+
+const regex2=/^[(]\d{3}[)]\d{3}-\d{4}$/;
+const regex2Int=/^(1\s{0,1})([(]\d{3}[)]\d{3}-\d{4})$/;
+
+const regex3=/^[(]\d{3}[)]\s{1}\d{3}-\d{4}$/;
+const regex3Int=/^(1\s{0,1})([(]\d{3}[)]\s{1}\d{3}-\d{4})$/;
+
+const regex4=/^\d{3}\s{1}\d{3}\s{1}\d{4}$/;
+const regex4Int=/^(1\s{0,1})(\d{3}\s{1}\d{3}\s{1}\d{4})$/;
+
+const regex5=/^\d{10}$/;
+const regex5Int=/^(1\s{0,1})(\d{10})$/;
+
+
+const numberRegexArr = [regex1,regex2,regex3,regex4,regex5,regex1Int,regex2Int,regex3Int,regex4Int,regex5Int];
+
+const testNumber = numberRegexArr.some(regex=>regex.test(str))
+
+if(!testNumber){return false}
+
+else{return true}
+
+
+}
+
+console.log(telephoneCheck('5555555555'))
+
+// telephoneCheck('12 5555555555');
+
