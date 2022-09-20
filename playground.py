@@ -29,3 +29,32 @@ print(myset)
 aa = []
 
 print(aa[-1])
+
+function rot13(str) {
+  function parser(char){
+
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz'.toUpperCase().split('');
+  
+    const regex = /[a-zA-Z]/;
+    if(regex.test(char)){
+    const charPositionInAlphabet = alphabet.indexOf(char)
+
+    const cipherPosition = (charPositionInAlphabet+13)>(alphabet.length-1)?(charPositionInAlphabet+13-alphabet.length):(charPositionInAlphabet+13)
+
+    const cipher = alphabet[cipherPosition]
+    return cipher
+    }
+
+    else{
+      return char
+    }
+
+  }
+
+  const resp = str.split('').map(char=>parser(char)).join('')
+
+  return resp
+
+}
+
+rot13("GUR DHVPX OEBJA SBK WHZCF BIRE GUR YNML QBT.");
