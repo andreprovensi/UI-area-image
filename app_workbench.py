@@ -695,6 +695,7 @@ class App:
         self.canvas.delete(self.tag_pre_spline)
         self.canvas.delete(self.tag_point_spline)
         self.canvas.delete(self.tag_pre_point_spline)
+        self.action_box.config(text='')
         self.root.focus()
 
     def clear_points_entities(self):

@@ -9,6 +9,7 @@ ipykernel = "*"
 scipy = "*"
 matplotlib = "*"
 numpy = "*"
+pyinstaller = "*"
 
 [dev-packages]
 
