@@ -102,6 +102,7 @@ class App:
     def __init__(self):
 
         self.root = Tk()
+        self.root.title('AreaCalc')
         self.root.geometry("1000x500")
 
         self.imagem = Imagem()
