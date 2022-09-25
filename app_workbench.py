@@ -425,7 +425,8 @@ class App:
 
         vetor_2 = Point(P4.x - P3.x, P4.y - P3.y)
 
-        self.area.area_px_plan = ((vetor_1.x*vetor_2.y) ** 2 + (vetor_2.x*vetor_1.y) ** 2) ** 0.5
+        # self.area.area_px_plan = ((vetor_1.x*vetor_2.y) ** 2 + (vetor_2.x*vetor_1.y) ** 2) ** 0.5
+        self.area.area_px_plan = abs(vetor_1.x*vetor_2.y - vetor_2.x*vetor_1.y)
 
         self.area.area_px_proj = (vetor_1.x**2 + vetor_1.y**2)**0.5 * (vetor_2.x**2 + vetor_2.y**2)**0.5
 
