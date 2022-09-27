@@ -728,7 +728,3 @@ class App:
 myApp = App()
 
 myApp.root.mainloop()
-
-# print('Raza pixel proj pixel plan',myApp.area.area_ratio_px_proj_px_plan)
-
-# print('\n Razao m proj pixel proj', myApp.area.area_ratio_m_proj_px_proj)

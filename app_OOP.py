@@ -32,6 +32,9 @@ class Polygon:
     def reset_pre_points(self):
         self.pre_points=[]
 
+    def remove_pre_point(self):
+        self.pre_points.pop()
+
 class Spline:
     def __init__(self, points=[]):
         self.pre_points = []
@@ -52,6 +55,9 @@ class Spline:
 
     def reset_pre_points(self):
         self.pre_points=[]
+
+    def remove_pre_point(self):
+        self.pre_points.pop()
 
 class FreeDraw:
     def __init__(self, points=[]):
@@ -303,6 +309,7 @@ class App:
             self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_polygon)
+            self.canvas.bind('<Button-3>',lambda event: self.correct_polygon())
             self.root.bind('<space>',lambda event: self.close_polygon())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
@@ -311,14 +318,30 @@ class App:
     def create_polygon(self,event):
         ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         self.polygon.get_pre_point(ponto)
-        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2,tags=self.tag_pre_polygon)
+        if len(self.polygon.pre_points) == 1:
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=2,tags=self.tag_pre_polygon)
         if len(self.polygon.pre_points)>1:
             self.canvas.create_line(self.polygon.pre_points[-2].x, self.polygon.pre_points[-2].y, self.polygon.pre_points[-1].x, self.polygon.pre_points[-1].y,tags=self.tag_pre_polygon)
 
+    def correct_polygon(self):
+        if len(self.polygon.pre_points)>2:
+            self.polygon.remove_pre_point()
+            self.draw_pre_polygon()
+        else:
+            self.clear_drawings()
+            self.unbind_all()
+            self.polygon.reset_pre_points()
+
+    def draw_pre_polygon(self):
+        self.canvas.delete(self.tag_pre_polygon)
+        if len(self.polygon.pre_points)>=2:
+            pointsList = [(p.x,p.y) for p in self.polygon.pre_points]
+            self.canvas.create_line(pointsList,tags=self.tag_pre_polygon)
+
     def close_polygon(self):
         self.unbind_all()
-        self.polygon.points = self.polygon.pre_points
-        if len(self.polygon.points)>=3:
+        if len(self.polygon.pre_points)>=2:
+            self.polygon.points = self.polygon.pre_points
             self.calcula_area_polygon()
             self.text_area_polygon.delete('1.0',END)
             self.text_area_polygon.insert(INSERT,f'        {self.polygon.area_m:.3f} mm²')
@@ -326,19 +349,17 @@ class App:
             self.canvas.create_line(points_list,tags=self.tag_polygon)
             self.canvas.create_line(self.polygon.points[-1].x,self.polygon.points[-1].y,self.polygon.points[0].x,self.polygon.points[0].y,tags=self.tag_polygon)
         else:
-            self.polygon.reset_points()
-            # self.render_image()
+            self.polygon.reset_pre_points()
 
     def check_spline(self):
         self.root.focus()
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
-            # self.render_image()
-            # self.canvas.delete(self.tag_freeDraw)
             self.clear_drawings()
             self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar a spline.',justify=LEFT)
             self.spline.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_spline)
+            self.canvas.bind('<Button-3>',lambda event: self.correct_spline())
             self.root.bind('<space>',lambda event: self.close_spline())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
@@ -348,24 +369,36 @@ class App:
     def create_spline(self,event):
         ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         self.spline.get_pre_point(ponto)
-        self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3, tags=self.tag_pre_point_spline) 
+        if len(self.spline.pre_points)==1:
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3, tags=self.tag_pre_point_spline) 
+        self.draw_pre_spline()
 
-        if len(self.spline.pre_points) > 3:
-            self.canvas.delete(self.tag_pre_spline)
-            # self.canvas.create_line([(point.x,point.y) for point in self.spline.points],smooth=True,tags=self.tag_spline)
-            
-            x_t = [ponto.x for ponto in self.spline.pre_points]
-            y_t = [ponto.y for ponto in self.spline.pre_points]
+    def correct_spline(self):
+        if len(self.spline.pre_points)>2:
+            self.spline.remove_pre_point()
+            self.draw_pre_spline()
+        else:
+            self.clear_drawings()
+            self.unbind_all()
+            self.spline.reset_pre_points()
 
-            x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
-            y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
+    def draw_pre_spline(self):
+        self.canvas.delete(self.tag_pre_spline)
+        if len(self.spline.pre_points) > 1:
+                    self.canvas.delete(self.tag_pre_spline)
 
-            # delta_t = np.linspace(0,len(x_t)-1,1000)
-            delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
+                    x_t = [ponto.x for ponto in self.spline.pre_points]
+                    y_t = [ponto.y for ponto in self.spline.pre_points]
 
-            points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
+                    x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
+                    y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-            self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
+                    # delta_t = np.linspace(0,len(x_t)-1,1000)
+                    delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
+
+                    points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
+
+                    self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
        
        
     def close_spline(self):
@@ -465,7 +498,7 @@ class App:
         
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
-            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5,tags=self.tag_dimension_1)
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3,tags=self.tag_dimension_1)
         
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
@@ -501,7 +534,7 @@ class App:
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
-            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=5, tags=self.tag_dimension_2)
+            self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3, tags=self.tag_dimension_2)
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
@@ -680,6 +713,7 @@ class App:
 
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
+        self.canvas.unbind('<Button-3>')
         self.canvas.unbind('<Double-Button>')
         self.canvas.unbind('<Motion>')
         self.root.unbind('<space>')
@@ -728,7 +762,3 @@ class App:
 myApp = App()
 
 myApp.root.mainloop()
-
-# print('Raza pixel proj pixel plan',myApp.area.area_ratio_px_proj_px_plan)
-
-# print('\n Razao m proj pixel proj', myApp.area.area_ratio_m_proj_px_proj)
