@@ -174,12 +174,14 @@ class App:
         self.red_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
         self.led_1 = ttk.Label(self.frame_input_led_1, image=self.red_led_figure_1 )
         self.C1_button = ttk.Button(self.frame_input_led_1, text='C1', width=4, command=self.C1_button_pressed)
+        self.C1_input_value_was_changed = False
         
         # BUTTON C2 e LED 2
         self.green_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg'))
         self.red_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
         self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
         self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command=self.C2_button_pressed)
+        self.C2_input_value_was_changed = False
         
         # SLIDERS e CHECK BOX
         self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
@@ -193,9 +195,11 @@ class App:
         #INPUTS DO C1 E C2
         self.input_value_1 = StringVar(self.root)
         self.dimension_input_1 = Entry(self.frame_input_led_1,textvariable=self.input_value_1, bd=3,width=15)
+        self.input_value_1.trace_add("write", lambda name, index,mode, var=self.input_value_1: self.check_dimension1_value_change())
         
         self.input_value_2 = StringVar(self.root)
         self.dimension_input_2 = Entry(self.frame_input_led_2,textvariable=self.input_value_2, bd=3,width=15)
+        self.input_value_2.trace_add("write", lambda name, index,mode, var=self.input_value_2: self.check_dimension2_value_change())
         
         # Action box
         # self.action_box = Text(self.frame_img_prop,bg='light yellow', width=20,wrap=WORD,font='verdana 8',padx=5,pady=8)   
@@ -216,9 +220,6 @@ class App:
         self.slider_lable.pack(side=LEFT,anchor='w')
         self.slider.pack(side=LEFT,anchor='ne',pady=15)
         self.check_box.pack(side=LEFT,pady=5)
-        # self.slider_lable.pack(side=LEFT,anchor='w',pady=15)
-        # self.slider.pack(side=LEFT,anchor='n',padx=1,pady=15)
-        # self.check_box.pack(side=LEFT,anchor='s')
 
         self.C1_button.pack(side=LEFT,padx=2)
         self.C2_button.pack(side=LEFT,padx=2)
@@ -259,7 +260,7 @@ class App:
         self.label_area_spline = Label(self.frame_spline,text='Área da Spline')
         self.text_area_spline = Text(self.frame_spline,width=18,height=1,font='arial 10',padx=2)
 
-        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = self.clear_drawings, width=20)
+        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
 
         self.button_new_free_draw.pack(side=TOP,pady=15,padx=5)
@@ -306,11 +307,12 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar o polígono.',justify=LEFT)
+            self.cler_dimensions_drawings()
+            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',justify=LEFT)
             self.polygon.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_polygon)
             self.canvas.bind('<Button-3>',lambda event: self.correct_polygon())
-            self.root.bind('<space>',lambda event: self.close_polygon())
+            self.root.bind('<Return>',lambda event: self.close_polygon())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
@@ -348,6 +350,7 @@ class App:
             points_list = [(p.x,p.y) for p in self.polygon.points]
             self.canvas.create_line(points_list,tags=self.tag_polygon)
             self.canvas.create_line(self.polygon.points[-1].x,self.polygon.points[-1].y,self.polygon.points[0].x,self.polygon.points[0].y,tags=self.tag_polygon)
+            self.action_box.config(text='')
         else:
             self.polygon.reset_pre_points()
 
@@ -356,11 +359,12 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte espaço para finalizar a spline.',justify=LEFT)
+            self.cler_dimensions_drawings()
+            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',justify=LEFT)
             self.spline.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_spline)
             self.canvas.bind('<Button-3>',lambda event: self.correct_spline())
-            self.root.bind('<space>',lambda event: self.close_spline())
+            self.root.bind('<Return>',lambda event: self.close_spline())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
             self.canvas.unbind('<Button-1>')
@@ -407,9 +411,11 @@ class App:
         self.calcula_area_spline()
         self.text_area_spline.delete('1.0',END)
         self.text_area_spline.insert(INSERT,f'        {self.spline.area_m:.3f} mm²')
+        self.action_box.config(text='')
 
         if len(self.spline.points)>=3:
             self.show_spline()
+            
         else:
             self.spline.reset_points()
 
@@ -418,15 +424,17 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.action_box.config(text='Clique duas vezes para começar o desenho e, chegando perto do final do desenho, clique novamente duas vezes para finalizar')
+            self.cler_dimensions_drawings()
+            self.action_box.config(text='Clique,segure e arraste para selecionar a lesão, aperte Enter para finaliza o desenho livre')
             self.freeDraw.reset_pre_points()
-            self.canvas.bind('<Double-Button>', lambda event: [self.canvas.bind('<Motion>',self.free_draw), self.canvas.bind('<Double-Button>', lambda event: [self.canvas.unbind('<Motion>'),self.close_free_draw()])])
+            self.canvas.bind('<B1-Motion>',self.create_free_draw)
+            self.root.bind('<Return>',lambda event: self.close_free_draw())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
-            self.canvas.unbind('<Motion>')
+            self.unbind_all()
             messagebox.showerror('','Você precisa definir o comprimento conhecido')
     
-    def free_draw(self,event):
+    def create_free_draw(self,event):
         if self.area.area_ratio_m_proj_px_proj:
             x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
             ponto = Point(x,y)
@@ -444,10 +452,8 @@ class App:
         self.calcula_area_freeDraw()
         self.text_area_freeDraw.delete('1.0',END)
         self.text_area_freeDraw.insert(INSERT,f'        {self.freeDraw.area_m:.3f} mm²')
-        # points_list = [(p.x,p.y) for p in self.freeDraw.points]
-        # self.canvas.create_line(points_list,tags=self.tag_freeDraw)
-        # self.canvas.create_line(self.freeDraw.points[-1].x,self.freeDraw.points[-1].y,self.freeDraw.points[0].x,self.freeDraw.points[0].y,tags=self.tag_freeDraw)
         self.show_free_draw()
+        self.action_box.config(text='')
 
     def set_proj_plan_ratio(self):
         P1 = self.dimensionRatio_1.points[0]
@@ -474,10 +480,39 @@ class App:
 
         self.area.area_ratio_m_proj_px_proj = length_1 * length_2 / self.area.area_px_proj
 
+    
+    def check_dimension1_value_change(self):
+
+        self.C1_input_value_was_changed =  True
+        self.led_1.config(image=self.red_led_figure_1)
+        self.dimensionRatio_1 = Dimension()
+        self.area = Area()
+        
+        self.dimensions_logic()
+    
+    def check_dimension2_value_change(self):
+
+        self.C2_input_value_was_changed = True
+        self.led_2.config(image=self.red_led_figure_2)
+        self.dimensionRatio_2 = Dimension()
+        self.area = Area()
+        
+        self.dimensions_logic()
+        
+    def dimensions_logic(self):
+
+        if self.C1_input_value_was_changed:
+            self.clear_drawings()
+            self.clear_points_entities()
+        if self.C2_input_value_was_changed:    
+            self.clear_drawings()
+            self.clear_points_entities()
+    
     def C1_button_pressed(self):
         self.root.focus()
         if self.input_value_1.get():
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
+            self.clear_drawings()
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
             self.unbind_all()
@@ -485,7 +520,6 @@ class App:
             self.text_area_freeDraw.delete('1.0',END)
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
-            # self.clear_drawings()
             self.canvas.bind('<Button-1>', self.get_C1_points)
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1), self.dimensionRatio_1.reset_points(), self.root.focus()])
             
@@ -504,17 +538,20 @@ class App:
             self.led_1.config(image=self.green_led_figure_1)
             self.unbind_all()
             self.root.focus()
+            self.C1_input_value_was_changed = False
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
             self.unbind_all()
             self.action_box.config(text='- Selecione um método para selecionar a área da lesão')
+            self.C1_input_value_was_changed = False
             # self.canvas.delete(self.tag_dimension)
 
     def C2_button_pressed(self):
         self.root.focus()
         if self.input_value_2.get():
             self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
+            self.clear_drawings()
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
             self.unbind_all()
@@ -540,6 +577,7 @@ class App:
             self.led_2.config(image=self.green_led_figure_2)
             self.unbind_all()
             self.root.focus()
+            self.C2_input_value_was_changed = False
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
@@ -592,6 +630,7 @@ class App:
             self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
 
             self.canvas.pack(side=TOP, anchor='n')
+
         
         if self.freeDraw.area_m or self.polygon.area_m or self.spline.area_m:
             self.clear_points_entities()
@@ -634,10 +673,7 @@ class App:
             
             area_meters = self.polygon.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
             self.polygon.area_m = area_meters
-            
-            # self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
-            # print(f'Calcula area geom foi chamado, o ponto inicial é {self.freeDraw.points[0].x},{self.freeDraw.points[0].y} e o ponto Final é {self.freeDraw.points[-1].x},{self.freeDraw.points[-1].y} ')
-  
+              
     def calcula_area_spline(self):
         if len(self.spline.points)>3 and self.area.area_ratio_m_proj_px_proj:
 
@@ -667,12 +703,11 @@ class App:
 
             self.spline.area_m = self.spline.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
 
-            # self.action_box.config(text=f'A área da figura é {self.spline.area_m:.2f} mm²')
-
     def show_free_draw(self):
         self.root.focus()
         if self.freeDraw.area_m:
             self.clear_drawings()
+            self.cler_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.freeDraw.points]
             points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_freeDraw)
@@ -683,6 +718,7 @@ class App:
         self.root.focus()
         if self.polygon.area_px:
             self.clear_drawings()
+            self.cler_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.polygon.points]
             points_list.append((self.polygon.points[0].x,self.polygon.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_polygon)
@@ -693,6 +729,7 @@ class App:
         self.root.focus()
         if self.spline.area_m:
             self.clear_drawings()
+            self.cler_dimensions_drawings()
             x_t = [ponto.x for ponto in self.spline.points]
             y_t = [ponto.y for ponto in self.spline.points]
 
@@ -706,8 +743,7 @@ class App:
             points_list_spline.append((self.spline.points[0].x,self.spline.points[0].y))
 
             self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_spline)
-            # points_list = [(p.x,p.y) for p in self.spline.points]
-            # self.canvas.create_line(points_list,tags=self.tag_spline)
+        
         else:
             messagebox.showerror('','A spline precisa ser definida.')   
 
@@ -716,13 +752,13 @@ class App:
         self.canvas.unbind('<Button-3>')
         self.canvas.unbind('<Double-Button>')
         self.canvas.unbind('<Motion>')
+        self.canvas.unbind('<B1-Motion>')
         self.root.unbind('<space>')
         self.root.unbind('<Escape>')
+        self.root.unbind('<Return>')
         # self.root.unbind('<KeyPress>')
 
     def clear_drawings(self):
-        self.canvas.delete(self.tag_dimension_1)
-        self.canvas.delete(self.tag_dimension_2)
         self.canvas.delete(self.tag_freeDraw)
         self.canvas.delete(self.tag_pre_freeDraw)
         self.canvas.delete(self.tag_polygon)
@@ -731,8 +767,12 @@ class App:
         self.canvas.delete(self.tag_pre_spline)
         self.canvas.delete(self.tag_point_spline)
         self.canvas.delete(self.tag_pre_point_spline)
-        self.action_box.config(text='')
-        self.root.focus()
+        # self.action_box.config(text='')
+        # self.root.focus()
+
+    def cler_dimensions_drawings(self):
+        self.canvas.delete(self.tag_dimension_1)
+        self.canvas.delete(self.tag_dimension_2)
 
     def clear_points_entities(self):
         self.freeDraw = FreeDraw()
@@ -742,6 +782,9 @@ class App:
         self.canvas.delete(self.tag_polygon)
         self.canvas.delete(self.tag_spline)
         self.canvas.delete(self.tag_point_spline)
+        self.text_area_freeDraw.delete('1.0',END)
+        self.text_area_polygon.delete('1.0',END)
+        self.text_area_spline.delete('1.0',END)
 
     def set_zoom(self):
 
@@ -749,9 +792,6 @@ class App:
             self.render_image()
             self.led_1.config(image=self.red_led_figure_1)
             self.led_2.config(image=self.red_led_figure_2)
-            # self.freeDraw = FreeDraw()
-            # self.polygon = Polygon()
-            # self.spline = Spline()
             self.clear_points_entities()
             self.input_value_1.set('') 
             self.input_value_2.set('')
@@ -762,7 +802,3 @@ class App:
 myApp = App()
 
 myApp.root.mainloop()
-
-# print('Raza pixel proj pixel plan',myApp.area.area_ratio_px_proj_px_plan)
-
-# print('\n Razao m proj pixel proj', myApp.area.area_ratio_m_proj_px_proj)
