@@ -260,7 +260,7 @@ class App:
         self.label_area_spline = Label(self.frame_spline,text='Área da Spline')
         self.text_area_spline = Text(self.frame_spline,width=18,height=1,font='arial 10',padx=2)
 
-        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings()] , width=20)
+        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings(), self.root.focus()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
 
         self.button_new_free_draw.pack(side=TOP,pady=15,padx=5)
@@ -677,8 +677,8 @@ class App:
     def calcula_area_spline(self):
         if len(self.spline.points)>3 and self.area.area_ratio_m_proj_px_proj:
 
-            x_t = [ponto.x for ponto in myApp.spline.points]
-            y_t = [ponto.y for ponto in myApp.spline.points]
+            x_t = [ponto.x for ponto in self.spline.points]
+            y_t = [ponto.y for ponto in self.spline.points]
 
             x_t_spline = CubicSpline(list(range(0,len(x_t))),x_t)
             y_t_spline = CubicSpline(list(range(0,len(y_t))),y_t)
