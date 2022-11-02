@@ -108,7 +108,7 @@ class App:
     def __init__(self):
 
         self.root = Tk()
-        self.root.title('AreaCalc')
+        self.root.title('SMART - Surface Measurement Tool')
         self.root.geometry("1000x500")
 
         self.imagem = Imagem()
@@ -480,6 +480,15 @@ class App:
 
         self.area.area_ratio_m_proj_px_proj = length_1 * length_2 / self.area.area_px_proj
 
+        print("Vetor 1", vetor_1.x, ';', vetor_1.y,'\n')
+        print("Vetor 2", vetor_2.x, ';', vetor_2.y,'\n')
+        print(f"Modulo vetor1: {(vetor_1.x**2 + vetor_1.y**2)**0.5}" , f"Modulo vetor2: {(vetor_2.x**2 + vetor_2.y**2)**0.5}",'\n')
+        print(f"Area pelo modulo de cada vetor {(vetor_1.x**2 + vetor_1.y**2)**0.5 * (vetor_2.x**2 + vetor_2.y**2)**0.5}",'\n')
+        print("Area pelo produto vetorial: ",self.area.area_px_plan,'\n')
+        print(f"Comprimento 1: {length_1}", f"Comprimento 2: {length_2}",f"Area calculada metros: {length_1*length_2}",'\n')
+        print(f"Razao pixel projetado por pixel plano: {self.area.area_ratio_px_proj_px_plan} ")
+        print(f"Razao metor projetado por px projetado: {length_1 * length_2 / self.area.area_px_proj} ")
+
     
     def check_dimension1_value_change(self):
 
@@ -487,6 +496,8 @@ class App:
         self.led_1.config(image=self.red_led_figure_1)
         self.dimensionRatio_1 = Dimension()
         self.area = Area()
+        # self.canvas.delete(self.tag_dimension_1)
+        self.canvas.delete(self.tag_dimension_1)
         
         self.dimensions_logic()
     
@@ -496,6 +507,8 @@ class App:
         self.led_2.config(image=self.red_led_figure_2)
         self.dimensionRatio_2 = Dimension()
         self.area = Area()
+        # self.canvas.delete(self.tag_dimension_1)
+        self.canvas.delete(self.tag_dimension_2)
         
         self.dimensions_logic()
         
@@ -529,6 +542,7 @@ class App:
         
     def get_C1_points(self, event):   
         ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+        print(ponto.x,ponto.y)
         
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
@@ -568,6 +582,7 @@ class App:
         
     def get_C2_points(self, event):   
         ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+        print(ponto.x,ponto.y)
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
@@ -666,7 +681,9 @@ class App:
                 delta_x_px = self.polygon.points[i].x - self.polygon.points[i-1].x
                 delta_y_px = self.polygon.points[i].y - self.polygon.points[i-1].y
                 y_1_px = min(self.polygon.points[i].y ,self.polygon.points[i-1].y)
-                area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
+                # area = delta_x_px * (y_1_px + abs(delta_y_px)/2)
+                area = (self.polygon.points[i-1].y+self.polygon.points[i].y) * delta_x_px / 2
+                print(f"Area_i: {area}",i,'\n')
                 areas_px.append(area)
             
             self.polygon.area_px = abs(sum(areas_px))

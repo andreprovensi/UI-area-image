@@ -108,7 +108,7 @@ class App:
     def __init__(self):
 
         self.root = Tk()
-        self.root.title('AreaCalc')
+        self.root.title('SMART - Surface Measurement Tool')
         self.root.geometry("1000x500")
 
         self.imagem = Imagem()
@@ -487,6 +487,7 @@ class App:
         self.led_1.config(image=self.red_led_figure_1)
         self.dimensionRatio_1 = Dimension()
         self.area = Area()
+        self.canvas.delete(self.tag_dimension_1)
         
         self.dimensions_logic()
     
@@ -496,6 +497,7 @@ class App:
         self.led_2.config(image=self.red_led_figure_2)
         self.dimensionRatio_2 = Dimension()
         self.area = Area()
+        self.canvas.delete(self.tag_dimension_2)
         
         self.dimensions_logic()
         
