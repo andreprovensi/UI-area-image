@@ -758,7 +758,6 @@ class App:
         self.root.unbind('<space>')
         self.root.unbind('<Escape>')
         self.root.unbind('<Return>')
-        # self.root.unbind('<KeyPress>')
 
     def clear_drawings(self):
         self.canvas.delete(self.tag_freeDraw)
@@ -769,8 +768,6 @@ class App:
         self.canvas.delete(self.tag_pre_spline)
         self.canvas.delete(self.tag_point_spline)
         self.canvas.delete(self.tag_pre_point_spline)
-        # self.action_box.config(text='')
-        # self.root.focus()
 
     def cler_dimensions_drawings(self):
         self.canvas.delete(self.tag_dimension_1)
