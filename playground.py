@@ -38,3 +38,16 @@ class Testt:
 myobj = Testt()
 
 myobj.metodo_estatico('chamei o metodo estatic')
+
+
+
+strArr = ['a', 'minha frase', 'b']
+
+
+print(strArr.index('minha frase'))
+
+
+dictStr = {'f1':'minha frase', 'f2':'outra frase '}
+
+for k in dictStr:
+    print(k)

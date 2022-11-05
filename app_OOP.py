@@ -20,11 +20,9 @@ class Polygon:
         
     def get_point(self,ponto=Point()):
         self.points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def get_pre_point(self,ponto=Point()):
         self.pre_points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def reset_points(self):
         self.points = []
@@ -44,11 +42,9 @@ class Spline:
         
     def get_point(self,ponto=Point()):
         self.points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def get_pre_point(self,ponto=Point()):
         self.pre_points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def reset_points(self):
         self.points = []
@@ -130,9 +126,16 @@ class App:
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar,padx=1,pady=1)
         self.file_menu = Menu(self.menubar,tearoff=False)
-        self.menubar.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Open", command=lambda: self.open_image())
-        self.file_menu.add_command(label="Exit", command=lambda: self.root.quit())
+        self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
+        self.file_menu.add_command(label="Abrir", command=lambda: self.open_image())
+        self.file_menu.add_command(label="Sair", command=lambda: self.root.quit())
+
+        self.language_menu = Menu(self.menubar,tearoff=False)
+        self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
+        self.language_menu.add_command(label='Português | Portuguese',command= lambda: self.change_language('PT'))
+        self.language_menu.add_command(label='Inglês | English', command= lambda: self.change_language('EN'))
+
+        self.language = 'PT'
 
         # FRAMES
 
@@ -202,10 +205,57 @@ class App:
         self.input_value_2.trace_add("write", lambda name, index,mode, var=self.input_value_2: self.check_dimension2_value_change())
         
         # Action box
-        # self.action_box = Text(self.frame_img_prop,bg='light yellow', width=20,wrap=WORD,font='verdana 8',padx=5,pady=8)   
-        # self.action_box.insert(INSERT,'1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão') 
+      
         
-        self.action_box = Message(self.frame_img_prop,text='1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão',bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')      
+        self.actionBoxContent = StringVar(self.root,value='1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão')
+
+        self.messagesDict = {
+            'openMessage':{
+                'PT':'1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão',
+                'EN':'1 - Load an Image\n\n2 - Adjust the zoom\n\n3 - Type the values of the known lengths\n\n4 - Press C1 to define the points for length 1\n\n5 - Press C2 to define the points for length 2\n\n6 - When the two leds turn green, choose a method to select injury area'
+            },
+            'selectPolygon':{
+                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',
+                'EN':'-Click to select the point that define the injury.\n\n- Press Enter to close the polygon.'
+            },
+            'selectSpline':{
+                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',
+                'EN':'-Click to select the point that define the injury.\n\n- Press Enter to close the spline.'
+            },
+            'selectFreeDraw':{
+                'PT':'Clique, segure e arraste para selecionar a lesão, aperte Enter para finalizar o desenho livre',
+                'EN':'Click, hold and drag to select the injury area, press Enter to close the free draw'
+            },
+            'selectLengthPoints':{
+                'PT':'- Selecione os pontos do comprimento conhecido',
+                'EN':'- Select the points of the known length'
+            },
+            'selectMethod':{
+                'PT':'- Selecione um método para delimitar a área da lesão',
+                'EN':'- Select a method to determine the injury area'
+            },
+            'unknownLength':{
+                'PT':'Você precisa definir o comprimento conhecido',
+                'EN':'You must define the known length'
+            },
+            'typeLength':{
+                'PT':'Você precisa digitar o comprimento conhecido',
+                'EN':'You must type the known length'
+            },
+            'definePolygon':{
+                'PT':'O polígono precisa ser definido',
+                'EN':'The polygon must be defined'
+            },
+            'defineFreeDraw':{
+                'PT':'O desenho livre precisa ser definido',
+                'EN':'The free draw must be defined'
+            },
+            'defineSpline':{
+                'PT':'A spline precisa ser definida',
+                'EN':'The spline must be defined'
+            }
+        }
+        self.action_box = Message(self.frame_img_prop, text=self.actionBoxContent.get(),bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')      
             
         #Positioning
         self.frame_zoom.pack(side=TOP,fill=BOTH)
@@ -308,14 +358,15 @@ class App:
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
             self.cler_dimensions_drawings()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',justify=LEFT)
+            self.actionBoxContent.set(self.messagesDict['selectPolygon'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.polygon.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_polygon)
             self.canvas.bind('<Button-3>',lambda event: self.correct_polygon())
             self.root.bind('<Return>',lambda event: self.close_polygon())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
-            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
     
     def create_polygon(self,event):
         ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
@@ -350,7 +401,8 @@ class App:
             points_list = [(p.x,p.y) for p in self.polygon.points]
             self.canvas.create_line(points_list,tags=self.tag_polygon)
             self.canvas.create_line(self.polygon.points[-1].x,self.polygon.points[-1].y,self.polygon.points[0].x,self.polygon.points[0].y,tags=self.tag_polygon)
-            self.action_box.config(text='')
+            self.actionBoxContent.set('')
+            self.action_box.config(text=self.actionBoxContent.get())
         else:
             self.polygon.reset_pre_points()
 
@@ -360,7 +412,8 @@ class App:
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
             self.cler_dimensions_drawings()
-            self.action_box.config(text='-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',justify=LEFT)
+            self.actionBoxContent.set(self.messagesDict['selectSpline'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.spline.reset_pre_points()
             self.canvas.bind('<Button-1>',self.create_spline)
             self.canvas.bind('<Button-3>',lambda event: self.correct_spline())
@@ -368,7 +421,7 @@ class App:
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
             self.canvas.unbind('<Button-1>')
-            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
     
     def create_spline(self,event):
         ponto = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
@@ -397,7 +450,6 @@ class App:
                     x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
                     y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-                    # delta_t = np.linspace(0,len(x_t)-1,1000)
                     delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
 
                     points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
@@ -411,7 +463,8 @@ class App:
         self.calcula_area_spline()
         self.text_area_spline.delete('1.0',END)
         self.text_area_spline.insert(INSERT,f'        {self.spline.area_m:.3f} mm²')
-        self.action_box.config(text='')
+        self.actionBoxContent.set('')
+        self.action_box.config(text = self.actionBoxContent.get())
 
         if len(self.spline.points)>=3:
             self.show_spline()
@@ -425,20 +478,20 @@ class App:
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
             self.cler_dimensions_drawings()
-            self.action_box.config(text='Clique,segure e arraste para selecionar a lesão, aperte Enter para finaliza o desenho livre')
+            self.actionBoxContent.set(self.messagesDict['selectFreeDraw'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get())
             self.freeDraw.reset_pre_points()
             self.canvas.bind('<B1-Motion>',self.create_free_draw)
             self.root.bind('<Return>',lambda event: self.close_free_draw())
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.clear_drawings()])
         else:
             self.unbind_all()
-            messagebox.showerror('','Você precisa definir o comprimento conhecido')
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
     
     def create_free_draw(self,event):
         if self.area.area_ratio_m_proj_px_proj:
             x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
             ponto = Point(x,y)
-            print(x,y)
             self.freeDraw.get_pre_point(ponto)
             if len(self.freeDraw.pre_points)>1:
                 self.canvas.create_line(self.freeDraw.pre_points[-2].x, self.freeDraw.pre_points[-2].y, self.freeDraw.pre_points[-1].x, self.freeDraw.pre_points[-1].y,tags=self.tag_pre_freeDraw)
@@ -453,7 +506,8 @@ class App:
         self.text_area_freeDraw.delete('1.0',END)
         self.text_area_freeDraw.insert(INSERT,f'        {self.freeDraw.area_m:.3f} mm²')
         self.show_free_draw()
-        self.action_box.config(text='')
+        self.actionBoxContent.set('')
+        self.action_box.config(text=self.actionBoxContent.get())
 
     def set_proj_plan_ratio(self):
         P1 = self.dimensionRatio_1.points[0]
@@ -512,7 +566,8 @@ class App:
     def C1_button_pressed(self):
         self.root.focus()
         if self.input_value_1.get():
-            self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
+            self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
@@ -525,7 +580,7 @@ class App:
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1), self.dimensionRatio_1.reset_points(), self.root.focus()])
             
         else:
-            messagebox.showerror('','Você precisa digitar o comprimento conhecido')
+            messagebox.showerror('',self.messagesDict['typeLength'][self.language])
             
         
     def get_C1_points(self, event):   
@@ -544,14 +599,15 @@ class App:
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
             self.unbind_all()
-            self.action_box.config(text='- Selecione um método para selecionar a área da lesão')
+            self.actionBoxContent.set(self.messagesDict['selectMethod'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get())
             self.C1_input_value_was_changed = False
-            # self.canvas.delete(self.tag_dimension)
 
     def C2_button_pressed(self):
         self.root.focus()
         if self.input_value_2.get():
-            self.action_box.config(text='- Selecione os pontos do comprimento conhecido')
+            self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
@@ -582,8 +638,8 @@ class App:
 
         if len(self.dimensionRatio_1.points) == 2 and len(self.dimensionRatio_2.points) == 2:
             self.set_proj_plan_ratio()
-            self.action_box.config(text='- Selecione um método para selecionar a área da lesão')
-            # self.canvas.delete(self.tag_dimension)
+            self.actionBoxContent.set(self.messagesDict['selectMethod'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get())
 
 
     def open_image(self):
@@ -653,9 +709,7 @@ class App:
             
             area_meters = self.freeDraw.area_px * self.area.area_ratio_px_proj_px_plan * self.area.area_ratio_m_proj_px_proj
             self.freeDraw.area_m = area_meters
-            
-            # self.action_box.config(text=f'A área da figura é {area_meters:.2f} mm²')
-            # self.text_area_freeDraw.insert(INSERT,f'{self.freeDraw.area_m:.2f} mm²')
+
 
     
     def calcula_area_polygon(self):
@@ -685,7 +739,6 @@ class App:
             y_t_spline = CubicSpline(list(range(0,len(y_t))),y_t)
 
             delta_t = np.linspace(0,len(x_t)-1,2000)
-            # delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
 
             points_list = [Point(x_t_spline(t),y_t_spline(t)) for t in delta_t]
 
@@ -713,7 +766,7 @@ class App:
             points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_freeDraw)
         else:
-            messagebox.showerror('','O desenho livre precisa ser definido.')
+            messagebox.showerror('',self.messagesDict['defineFreeDraw'][self.language])
 
     def show_polygon(self):
         self.root.focus()
@@ -724,7 +777,7 @@ class App:
             points_list.append((self.polygon.points[0].x,self.polygon.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_polygon)
         else:
-            messagebox.showerror('','O polígono precisa ser definido.')
+            messagebox.showerror('',self.messagesDict['definePolygon'][self.language])
 
     def show_spline(self):
         self.root.focus()
@@ -737,7 +790,6 @@ class App:
             x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
             y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-            # delta_t = np.linspace(0,len(x_t)-1,1000)
             delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
 
             points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
@@ -746,7 +798,7 @@ class App:
             self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_spline)
         
         else:
-            messagebox.showerror('','A spline precisa ser definida.')   
+            messagebox.showerror('',self.messagesDict['defineSpline'][self.language])   
 
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
@@ -785,7 +837,6 @@ class App:
         self.text_area_spline.delete('1.0',END)
 
     def set_zoom(self):
-
         if self.imagem.src_img:
             self.render_image()
             self.led_1.config(image=self.red_led_figure_1)
@@ -796,6 +847,78 @@ class App:
             self.text_area_freeDraw.delete('1.0',END)
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
+
+    def change_language(self, language):
+        if(language == 'EN' and self.language == 'PT'):
+
+            self.menubar.entryconfigure(1, label="File")
+            self.menubar.entryconfigure(2, label="Language")
+            self.language_menu.entryconfigure(0,label = 'Portuguese | Português')
+            self.language_menu.entryconfigure(1,label = 'English | Inglês')
+
+            self.file_menu.entryconfigure(0,label = 'Open')
+            self.file_menu.entryconfigure(1,label = 'Exit')
+            
+            self.check_box.config(text='Fix Zoom')
+            self.dimension_input_lable.config(text='Known lengths in milimeters',wraplength=0)
+
+            self.button_new_free_draw.config(text='New Free Draw')
+            self.button_show_free_draw.config(text = 'Show Free Draw')
+            self.label_area_free_draw.config(text = 'Free Draw Area')
+
+            self.button_new_polygon.config(text='New Polygon')
+            self.button_show_polygon.config(text = 'Show Polygon')
+            self.label_area_polygon.config(text = 'Polygon Area')
+
+            self.button_new_spline.config(text='New Spline')
+            self.button_show_spline.config(text = 'Show Spline')
+            self.label_area_spline.config(text = 'Spline Area')
+
+            self.button_erase.config(text = 'Clear Image')
+
+            for key in self.messagesDict.keys():
+
+                if self.actionBoxContent.get() == self.messagesDict[key]['PT']:
+                    self.actionBoxContent.set(self.messagesDict[key]['EN'])
+                    self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
+                    break
+
+            self.language = language
+
+        elif (language == 'PT' and self.language == 'EN' ):
+
+            self.language_menu.entryconfigure(0,label = 'Português | Portuguese ')
+            self.language_menu.entryconfigure(1,label = 'Inglês | English')
+
+            self.menubar.entryconfigure(1, label="Arquivo")
+            self.menubar.entryconfigure(2, label="Idioma")
+            self.file_menu.entryconfigure(0,label = 'Abrir')
+            self.file_menu.entryconfigure(1,label = 'Sair')
+
+            self.check_box.config(text='Fixar Zoom')
+            self.dimension_input_lable.config(text='Comprimentos conhecidos em milímetros',wraplength=150)
+
+            self.button_new_free_draw.config(text='Novo Desenho Livre')
+            self.button_show_free_draw.config(text = 'Mostrar Desenho Livre')
+            self.label_area_free_draw.config(text = 'Área do Desenho Livre')
+
+            self.button_new_polygon.config(text='Novo Polígono')
+            self.button_show_polygon.config(text = 'Mostrar Polígono')
+            self.label_area_polygon.config(text = 'Área do Polígono')
+
+            self.button_new_spline.config(text='Nova Spline')
+            self.button_show_spline.config(text = 'Mostrar Spline')
+            self.label_area_spline.config(text = 'Área da Spline')
+
+            self.button_erase.config(text = 'Limpar Imagem')
+
+            for key in self.messagesDict.keys():
+                if self.actionBoxContent.get() == self.messagesDict[key]['EN']:
+                    self.actionBoxContent.set(self.messagesDict[key]['PT'])
+                    self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
+                    break
+
+            self.language = language
 
 myApp = App()
 
