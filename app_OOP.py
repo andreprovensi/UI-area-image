@@ -620,7 +620,7 @@ class App:
             self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_2), self.dimensionRatio_2.reset_points(),self.root.focus()])
             
         else:
-            messagebox.showerror('','Você precisa digitar o comprimento conhecido')
+            messagebox.showerror('',self.messagesDict['typeLength'][self.language])
             
         
     def get_C2_points(self, event):   
