@@ -220,11 +220,11 @@ class App:
             },
             'selectPolygon':{
                 'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',
-                'EN':'-Click to select the point that define the injury.\n\n- Press Enter to close the polygon.'
+                'EN':'-Click to select the point that defines the injury.\n\n- Press Enter to close the polygon.'
             },
             'selectSpline':{
                 'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',
-                'EN':'-Click to select the point that define the injury.\n\n- Press Enter to close the spline.'
+                'EN':'-Click to select the point that defines the injury.\n\n- Press Enter to close the spline.'
             },
             'selectFreeDraw':{
                 'PT':'Clique, segure e arraste para selecionar a lesão, aperte Enter para finalizar o desenho livre',
