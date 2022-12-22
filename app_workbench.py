@@ -20,11 +20,9 @@ class Polygon:
         
     def get_point(self,ponto=Point()):
         self.points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def get_pre_point(self,ponto=Point()):
         self.pre_points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def reset_points(self):
         self.points = []
@@ -44,11 +42,9 @@ class Spline:
         
     def get_point(self,ponto=Point()):
         self.points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def get_pre_point(self,ponto=Point()):
         self.pre_points.append(ponto)
-        print(f'{ponto.x}, {ponto.y}')
 
     def reset_points(self):
         self.points = []
@@ -446,20 +442,19 @@ class App:
     def draw_pre_spline(self):
         self.canvas.delete(self.tag_pre_spline)
         if len(self.spline.pre_points) > 1:
-                    self.canvas.delete(self.tag_pre_spline)
+            self.canvas.delete(self.tag_pre_spline)
 
-                    x_t = [ponto.x for ponto in self.spline.pre_points]
-                    y_t = [ponto.y for ponto in self.spline.pre_points]
+            x_t = [ponto.x for ponto in self.spline.pre_points]
+            y_t = [ponto.y for ponto in self.spline.pre_points]
 
-                    x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
-                    y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
+            x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
+            y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-                    # delta_t = np.linspace(0,len(x_t)-1,1000)
-                    delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
+            delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
 
-                    points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
+            points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
 
-                    self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
+            self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
        
        
     def close_spline(self):
@@ -497,7 +492,6 @@ class App:
         if self.area.area_ratio_m_proj_px_proj:
             x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
             ponto = Point(x,y)
-            print(x,y)
             self.freeDraw.get_pre_point(ponto)
             if len(self.freeDraw.pre_points)>1:
                 self.canvas.create_line(self.freeDraw.pre_points[-2].x, self.freeDraw.pre_points[-2].y, self.freeDraw.pre_points[-1].x, self.freeDraw.pre_points[-1].y,tags=self.tag_pre_freeDraw)
@@ -646,16 +640,19 @@ class App:
             self.set_proj_plan_ratio()
             self.actionBoxContent.set(self.messagesDict['selectMethod'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
-            # self.canvas.delete(self.tag_dimension)
 
 
     def open_image(self):
+        self.actionBoxContent.set(self.messagesDict['openMessage'][self.language])
+        self.action_box.config(text=self.actionBoxContent.get())
+        
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
         self.imagem.src_img = Image.open(self.imagem.file)
 
+
         self.render_image()
-        
+
         self.clear_points_entities()
 
         self.led_1.config(image=self.red_led_figure_1)
@@ -746,7 +743,6 @@ class App:
             y_t_spline = CubicSpline(list(range(0,len(y_t))),y_t)
 
             delta_t = np.linspace(0,len(x_t)-1,2000)
-            # delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
 
             points_list = [Point(x_t_spline(t),y_t_spline(t)) for t in delta_t]
 
@@ -798,7 +794,6 @@ class App:
             x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
             y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-            # delta_t = np.linspace(0,len(x_t)-1,1000)
             delta_t = list(np.arange(0,len(self.spline.points)-1+0.1,0.1))
 
             points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]

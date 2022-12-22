@@ -442,19 +442,19 @@ class App:
     def draw_pre_spline(self):
         self.canvas.delete(self.tag_pre_spline)
         if len(self.spline.pre_points) > 1:
-                    self.canvas.delete(self.tag_pre_spline)
+            self.canvas.delete(self.tag_pre_spline)
 
-                    x_t = [ponto.x for ponto in self.spline.pre_points]
-                    y_t = [ponto.y for ponto in self.spline.pre_points]
+            x_t = [ponto.x for ponto in self.spline.pre_points]
+            y_t = [ponto.y for ponto in self.spline.pre_points]
 
-                    x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
-                    y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
+            x_t_spline = CubicSpline(list(np.arange(0,len(x_t))),x_t)
+            y_t_spline = CubicSpline(list(np.arange(0,len(y_t))),y_t)
 
-                    delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
+            delta_t = list(np.arange(0,len(self.spline.pre_points)-1+0.1,0.1))
 
-                    points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
+            points_list_spline = [(x_t_spline(t), y_t_spline(t)) for t in delta_t]
 
-                    self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
+            self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_pre_spline,width=1.2)
        
        
     def close_spline(self):
@@ -643,12 +643,16 @@ class App:
 
 
     def open_image(self):
+        self.actionBoxContent.set(self.messagesDict['openMessage'][self.language])
+        self.action_box.config(text=self.actionBoxContent.get())
+        
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
         self.imagem.src_img = Image.open(self.imagem.file)
 
+
         self.render_image()
-        
+
         self.clear_points_entities()
 
         self.led_1.config(image=self.red_led_figure_1)
