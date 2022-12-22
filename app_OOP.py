@@ -645,7 +645,7 @@ class App:
     def open_image(self):
         self.actionBoxContent.set(self.messagesDict['openMessage'][self.language])
         self.action_box.config(text=self.actionBoxContent.get())
-        
+
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
         
         self.imagem.src_img = Image.open(self.imagem.file)
