@@ -126,14 +126,14 @@ class App:
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar,padx=1,pady=1)
         self.file_menu = Menu(self.menubar,tearoff=False)
-        self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
         self.file_menu.add_command(label="Abrir", command=lambda: self.open_image())
         self.file_menu.add_command(label="Sair", command=lambda: self.root.quit())
+        self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
 
         self.language_menu = Menu(self.menubar,tearoff=False)
-        self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
         self.language_menu.add_command(label='Português | Portuguese',command= lambda: self.change_language('PT'))
         self.language_menu.add_command(label='Inglês | English', command= lambda: self.change_language('EN'))
+        self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
 
         self.language = 'PT'
 
