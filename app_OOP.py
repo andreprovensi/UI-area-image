@@ -253,6 +253,10 @@ class App:
             'defineSpline':{
                 'PT':'A spline precisa ser definida',
                 'EN':'The spline must be defined'
+            },
+            'loadImage':{
+            'PT':'Uma imagem precisa ser carregada',
+            'EN':'An image must be loaded'
             }
         }
         self.action_box = Message(self.frame_img_prop, text=self.actionBoxContent.get(),bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')      
@@ -535,7 +539,11 @@ class App:
 
     
     def check_dimension1_value_change(self):
-
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            self.input_value_1.set('')
+            return
+        
         self.C1_input_value_was_changed =  True
         self.led_1.config(image=self.red_led_figure_1)
         self.dimensionRatio_1 = Dimension()
@@ -545,6 +553,10 @@ class App:
         self.dimensions_logic()
     
     def check_dimension2_value_change(self):
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            self.input_value_2.set('')
+            return
 
         self.C2_input_value_was_changed = True
         self.led_2.config(image=self.red_led_figure_2)
@@ -565,6 +577,10 @@ class App:
     
     def C1_button_pressed(self):
         self.root.focus()
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            return
+        
         if self.input_value_1.get():
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
@@ -581,6 +597,7 @@ class App:
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
+            return
             
         
     def get_C1_points(self, event):   
@@ -605,6 +622,10 @@ class App:
 
     def C2_button_pressed(self):
         self.root.focus()
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            return
+        
         if self.input_value_2.get():
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
@@ -621,6 +642,7 @@ class App:
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
+            return
             
         
     def get_C2_points(self, event):   
