@@ -126,14 +126,14 @@ class App:
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar,padx=1,pady=1)
         self.file_menu = Menu(self.menubar,tearoff=False)
-        self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
         self.file_menu.add_command(label="Abrir", command=lambda: self.open_image())
         self.file_menu.add_command(label="Sair", command=lambda: self.root.quit())
+        self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
 
         self.language_menu = Menu(self.menubar,tearoff=False)
-        self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
         self.language_menu.add_command(label='Português | Portuguese',command= lambda: self.change_language('PT'))
         self.language_menu.add_command(label='Inglês | English', command= lambda: self.change_language('EN'))
+        self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
 
         self.language = 'PT'
 
@@ -253,6 +253,10 @@ class App:
             'defineSpline':{
                 'PT':'A spline precisa ser definida',
                 'EN':'The spline must be defined'
+            },
+            'loadImage':{
+            'PT':'Uma imagem precisa ser carregada',
+            'EN':'An image must be loaded'
             }
         }
         self.action_box = Message(self.frame_img_prop, text=self.actionBoxContent.get(),bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')      
@@ -343,6 +347,8 @@ class App:
 
         self.tag_dimension_1 = 'tagDimension_1'
         self.tag_dimension_2 = 'tagDimension_2'
+        self.tag_dimension_1_line = 'tagLineLength1'
+        self.tag_dimension_2_line = 'tagLineLength2'
         self.tag_freeDraw = 'tagFreeDraw'
         self.tag_polygon = 'tagPolygon'
         self.tag_spline = 'tagSpline'
@@ -535,7 +541,11 @@ class App:
 
     
     def check_dimension1_value_change(self):
-
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            self.input_value_1.set('')
+            return
+        
         self.C1_input_value_was_changed =  True
         self.led_1.config(image=self.red_led_figure_1)
         self.dimensionRatio_1 = Dimension()
@@ -545,6 +555,10 @@ class App:
         self.dimensions_logic()
     
     def check_dimension2_value_change(self):
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            self.input_value_2.set('')
+            return
 
         self.C2_input_value_was_changed = True
         self.led_2.config(image=self.red_led_figure_2)
@@ -565,10 +579,15 @@ class App:
     
     def C1_button_pressed(self):
         self.root.focus()
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            return
+        
         if self.input_value_1.get():
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
+            self.canvas.delete(self.tag_dimension_1, self.tag_dimension_1_line)
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
             self.unbind_all()
@@ -577,18 +596,22 @@ class App:
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
             self.canvas.bind('<Button-1>', self.get_C1_points)
-            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1), self.dimensionRatio_1.reset_points(), self.root.focus()])
+            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1, self.tag_dimension_1_line), self.dimensionRatio_1.reset_points(), self.root.focus()])
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
+            return
             
         
-    def get_C1_points(self, event):   
-        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
-        
+    def get_C1_points(self, event):
+
+        ponto = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3,tags=self.tag_dimension_1)
+            if len(self.dimensionRatio_1.points) == 1:
+                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLineLength1'), self.canvas.create_line(self.dimensionRatio_1.points[0].x, self.dimensionRatio_1.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLineLength1')])
         
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
@@ -605,10 +628,15 @@ class App:
 
     def C2_button_pressed(self):
         self.root.focus()
+        if not self.imagem.src_img:
+            messagebox.showerror('',self.messagesDict['loadImage'][self.language])
+            return
+        
         if self.input_value_2.get():
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
+            self.canvas.delete(self.tag_dimension_2, self.tag_dimension_2_line)
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
             self.unbind_all()
@@ -617,18 +645,22 @@ class App:
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
             self.canvas.bind('<Button-1>',self.get_C2_points)
-            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_2), self.dimensionRatio_2.reset_points(),self.root.focus()])
+            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_2, self.tag_dimension_2_line), self.dimensionRatio_2.reset_points(),self.root.focus()])
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
+            return
             
         
-    def get_C2_points(self, event):   
-        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+    def get_C2_points(self, event):
+
+        ponto = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3, tags=self.tag_dimension_2)
+            if len(self.dimensionRatio_2.points) == 1:
+                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLineLength2'), self.canvas.create_line(self.dimensionRatio_2.points[0].x, self.dimensionRatio_2.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLineLength2')])
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
@@ -644,7 +676,6 @@ class App:
 
     def open_image(self):
         self.actionBoxContent.set(self.messagesDict['openMessage'][self.language])
-        
         self.action_box.config(text=self.actionBoxContent.get())
 
         self.imagem.file = askopenfilename(filetypes=[("all files","*"),("Bitmap Files","*.bmp; *.dib"), ("JPEG", "*.jpg; *.jpe; *.jpeg; *.jfif"),("PNG", "*.png"), ("TIFF", "*.tiff; *.tif")])
@@ -828,6 +859,8 @@ class App:
     def cler_dimensions_drawings(self):
         self.canvas.delete(self.tag_dimension_1)
         self.canvas.delete(self.tag_dimension_2)
+        self.canvas.delete(self.tag_dimension_1_line)
+        self.canvas.delete(self.tag_dimension_2_line)
 
     def clear_points_entities(self):
         self.freeDraw = FreeDraw()

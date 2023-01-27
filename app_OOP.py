@@ -347,6 +347,8 @@ class App:
 
         self.tag_dimension_1 = 'tagDimension_1'
         self.tag_dimension_2 = 'tagDimension_2'
+        self.tag_dimension_1_line = 'tagLineLength1'
+        self.tag_dimension_2_line = 'tagLineLength2'
         self.tag_freeDraw = 'tagFreeDraw'
         self.tag_polygon = 'tagPolygon'
         self.tag_spline = 'tagSpline'
@@ -585,6 +587,7 @@ class App:
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
+            self.canvas.delete(self.tag_dimension_1, self.tag_dimension_1_line)
             self.dimensionRatio_1.reset_points()
             self.dimensionRatio_1.set_length(float(self.input_value_1.get()))
             self.unbind_all()
@@ -593,19 +596,22 @@ class App:
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
             self.canvas.bind('<Button-1>', self.get_C1_points)
-            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1), self.dimensionRatio_1.reset_points(), self.root.focus()])
+            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_1, self.tag_dimension_1_line), self.dimensionRatio_1.reset_points(), self.root.focus()])
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
             return
             
         
-    def get_C1_points(self, event):   
-        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
-        
+    def get_C1_points(self, event):
+
+        ponto = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+
         if len(self.dimensionRatio_1.points)<=1:
             self.dimensionRatio_1.points.append(ponto)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3,tags=self.tag_dimension_1)
+            if len(self.dimensionRatio_1.points) == 1:
+                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLineLength1'), self.canvas.create_line(self.dimensionRatio_1.points[0].x, self.dimensionRatio_1.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLineLength1')])
         
         if len(self.dimensionRatio_1.points) == 2:
             self.led_1.config(image=self.green_led_figure_1)
@@ -630,6 +636,7 @@ class App:
             self.actionBoxContent.set(self.messagesDict['selectLengthPoints'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.clear_drawings()
+            self.canvas.delete(self.tag_dimension_2, self.tag_dimension_2_line)
             self.dimensionRatio_2.reset_points()
             self.dimensionRatio_2.set_length(float(self.input_value_2.get()))
             self.unbind_all()
@@ -638,19 +645,22 @@ class App:
             self.text_area_polygon.delete('1.0',END)
             self.text_area_spline.delete('1.0',END)
             self.canvas.bind('<Button-1>',self.get_C2_points)
-            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_2), self.dimensionRatio_2.reset_points(),self.root.focus()])
+            self.root.bind('<Escape>',lambda event: [self.unbind_all(), self.canvas.delete(self.tag_dimension_2, self.tag_dimension_2_line), self.dimensionRatio_2.reset_points(),self.root.focus()])
             
         else:
             messagebox.showerror('',self.messagesDict['typeLength'][self.language])
             return
             
         
-    def get_C2_points(self, event):   
-        ponto=Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+    def get_C2_points(self, event):
+
+        ponto = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
         
         if len(self.dimensionRatio_2.points)<=1:
             self.dimensionRatio_2.points.append(ponto)
             self.canvas.create_oval((ponto.x,ponto.y,ponto.x,ponto.y),fill='black',width=3, tags=self.tag_dimension_2)
+            if len(self.dimensionRatio_2.points) == 1:
+                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLineLength2'), self.canvas.create_line(self.dimensionRatio_2.points[0].x, self.dimensionRatio_2.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLineLength2')])
         
         if len(self.dimensionRatio_2.points) == 2:
             self.led_2.config(image=self.green_led_figure_2)
@@ -849,6 +859,8 @@ class App:
     def cler_dimensions_drawings(self):
         self.canvas.delete(self.tag_dimension_1)
         self.canvas.delete(self.tag_dimension_2)
+        self.canvas.delete(self.tag_dimension_1_line)
+        self.canvas.delete(self.tag_dimension_2_line)
 
     def clear_points_entities(self):
         self.freeDraw = FreeDraw()
