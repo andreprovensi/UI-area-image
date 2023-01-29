@@ -958,6 +958,10 @@ class App:
 
             self.language = language
 
-myApp = App()
+def main():
+    myApp = App()
 
-myApp.root.mainloop()
+    myApp.root.mainloop()
+
+if __name__ == '__main__':
+    main()
