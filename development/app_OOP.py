@@ -11,7 +11,7 @@ class Point:
         self.x = x
         self.y = y
 
-class Polygon:
+class Geomerty:
     def __init__(self, points=[]):
         self.pre_points=[]
         self.points = points
@@ -33,27 +33,14 @@ class Polygon:
     def remove_pre_point(self):
         self.pre_points.pop()
 
-class Spline:
-    def __init__(self, points=[]):
-        self.pre_points = []
-        self.points = points
-        self.area_px = None
-        self.area_m = None
-        
-    def get_point(self,ponto=Point()):
-        self.points.append(ponto)
+class Polygon(Geomerty):
+    def __init__(self):
+        super().__init__()
+ 
 
-    def get_pre_point(self,ponto=Point()):
-        self.pre_points.append(ponto)
-
-    def reset_points(self):
-        self.points = []
-
-    def reset_pre_points(self):
-        self.pre_points=[]
-
-    def remove_pre_point(self):
-        self.pre_points.pop()
+class Spline(Geomerty):
+    def __init__(self):
+        super().__init__()
 
 class FreeDraw:
     def __init__(self, points=[]):
@@ -399,7 +386,7 @@ class App:
 
     def close_polygon(self):
         self.unbind_all()
-        if len(self.polygon.pre_points)>2:
+        if len(self.polygon.pre_points)>=2:
             self.polygon.points = self.polygon.pre_points
             self.calcula_area_polygon()
             self.text_area_polygon.delete('1.0',END)
@@ -960,10 +947,6 @@ class App:
 
             self.language = language
 
-def main():
-    myApp = App()
+myApp = App()
 
-    myApp.root.mainloop()
-
-if __name__ == '__main__':
-    main()
+myApp.root.mainloop()
