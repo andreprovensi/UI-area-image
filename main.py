@@ -399,7 +399,7 @@ class App:
 
     def close_polygon(self):
         self.unbind_all()
-        if len(self.polygon.pre_points)>=2:
+        if len(self.polygon.pre_points)>2:
             self.polygon.points = self.polygon.pre_points
             self.calcula_area_polygon()
             self.text_area_polygon.delete('1.0',END)
@@ -411,6 +411,7 @@ class App:
             self.action_box.config(text=self.actionBoxContent.get())
         else:
             self.polygon.reset_pre_points()
+            self.clear_drawings()
 
     def check_spline(self):
         self.root.focus()
@@ -468,15 +469,16 @@ class App:
         self.spline.points = self.spline.pre_points
         self.calcula_area_spline()
         self.text_area_spline.delete('1.0',END)
-        self.text_area_spline.insert(INSERT,f'        {self.spline.area_m:.3f} mm²')
         self.actionBoxContent.set('')
         self.action_box.config(text = self.actionBoxContent.get())
 
         if len(self.spline.points)>=3:
+            self.text_area_spline.insert(INSERT,f'        {self.spline.area_m:.3f} mm²')
             self.show_spline()
             
         else:
             self.spline.reset_points()
+            self.clear_drawings()
 
     def check_free_draw(self):
         self.root.focus()
