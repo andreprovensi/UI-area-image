@@ -107,6 +107,10 @@ class App:
         self.root.title('SMART - Surface Measurement Tool')
         self.root.geometry("1000x500")
 
+        self.icon_figure = ImageTk.PhotoImage(Image.open('./images/logo-removebg.png'))
+
+        self.root.wm_iconphoto(False, self.icon_figure)
+
         self.imagem = Imagem()
 
         self.freeDraw = FreeDraw()
