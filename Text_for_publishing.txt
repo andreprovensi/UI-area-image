@@ -1,1 +1,5 @@
+Last year we had the opportunity of endeavoring in the world of health alongside a distinct team of Professors and students from the Pathology Department at the Federal University of Santa Catarina.
 
+We had the pleasure of developing this software, which is available for the entire world and helps health professionals, especially dentists, monitor oral lesions. The idea was to create a tool that allowed any dentist or physician to evaluate the surface area of relatively flat lesions, so tracking its evolution could be done in a more objective manner.
+
+This should allow not only a more accurate selection of treatment guidelines, but also improve research, given that scientists now have a tool to more precisely evaluate lesion evolution. As a side benefit, creating an objective way of tracking lesions also facilitates communication between peers, even if they have not had personal contact with the patient or have been following the case from the beginning.
