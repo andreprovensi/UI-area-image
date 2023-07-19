@@ -5,9 +5,9 @@ This is a GUI developed in tkinter to measure the surface area of a lesion in a 
 ## Features
 
 * Load images from disk
-* Define the known lengths of two points in the image
+* Define the known lengths of two points in the image to correct perspective effects
 * Select the area of the lesion using one of three methods: polygon, spline, or free draw
-* Calculate and display the area of the lesion in millimeters and square meters
+* Calculate and display the area of the lesion in square millimeters
 
 ## Requirements
 
