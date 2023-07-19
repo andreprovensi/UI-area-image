@@ -23,4 +23,5 @@ This is a GUI developed in tkinter to measure the surface area of a lesion in a 
 
 ## Installation
 
-You can check the project and download the software at https://smartmonitoring.ufsc.br/
+* You can check the project and download the software at https://smartmonitoring.ufsc.br/
+* The software is available in Portuguese and English
