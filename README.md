@@ -9,10 +9,10 @@ This is a GUI developed in tkinter to measure the surface area of a lesion in a 
 * Define the known lengths of two points in the image to correct perspective effects
 * Select the area of the lesion using one of three methods: polygon, spline, or free draw
 * Calculate and display the area of the lesion in square millimeters
-<div style="margin-left:100px">
-<img src="https://github.com/andreprovensi/UI-area-image/blob/main/gif/passo_8-Made-with-Clipchamp.gif" alt="Alt Text" width="600" height="400">
+<div style="margin-left:300px">
+<img src="https://github.com/andreprovensi/UI-area-image/blob/main/gif/passo_8-Made-with-Clipchamp.gif" alt="Alt Text" width="600" height="600">
 <br>
-<img src="https://github.com/andreprovensi/UI-area-image/blob/main/gif/desenho_livre-Made-with-Clipchamp.gif" alt="Alt Text" width="600" height="400">
+<img src="https://github.com/andreprovensi/UI-area-image/blob/main/gif/desenho_livre-Made-with-Clipchamp.gif" alt="Alt Text" width="600" height="600">
 </div>
 ## Requirements
 
