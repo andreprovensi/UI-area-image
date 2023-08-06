@@ -6,6 +6,7 @@ from scipy.interpolate import CubicSpline
 import numpy as np
 
 
+
 class Point:
     def __init__(self, x=0.0, y=0.0):
         self.x = x
