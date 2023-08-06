@@ -260,7 +260,7 @@ class App:
         self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings(), self.root.focus()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
 
-        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', width=20)
+        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', command= lambda: self.canvas.bind('<Button-1>', self.get_length_points), width=20)
         self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', width=20)
         self.label_length = Label(self.frame_length, text='Comprimento')
         self.text_length = Text(self.frame_length, width=18, height=1, font='arial 10', padx=2)
@@ -976,6 +976,7 @@ class App:
 
             self.language = language
     
+    #def check_length(self, event):
 
     
     def get_length_points(self, event):
@@ -984,9 +985,19 @@ class App:
 
         if len(self.length.points)<=1:
             self.length.points.append(point_length)
-            self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.tag_dimension_1)
+            self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.length)
             if len(self.length.points) == 1:
-                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLength')])
+                self.canvas.bind('<Motion>', lambda event: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(event.x),self.canvas.canvasy(event.y), tags= 'tagLength')])
+        
+        else:
+            self.unbind_all()
+
+            self.return_length(self.length)
+    
+
+
+    
+    #def return_length(self,length):
         
 
 def main():
