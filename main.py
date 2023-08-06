@@ -101,6 +101,8 @@ class Area:
         self.area_m_proj = None
         self.area_ratio_m_proj_px_proj = None
 
+
+
 class App:
     def __init__(self):
 
@@ -111,7 +113,7 @@ class App:
         #--------------------------------------------------------------------
         self.root = Tk()
         self.root.title('SMART - Surface Measurement Tool')
-        self.root.geometry("1000x500")
+        self.root.geometry("1200x800")
         self.icon_figure = ImageTk.PhotoImage(Image.open('./images/logo_only_mouth.png'))
         self.root.wm_iconphoto(False, self.icon_figure)
         self.imagem = Imagem()
@@ -121,6 +123,7 @@ class App:
         self.area = Area()
         self.dimensionRatio_1 = Dimension()
         self.dimensionRatio_2 = Dimension()
+        self.length = Dimension()
         
 
 
@@ -156,10 +159,12 @@ class App:
         self.frame_polygon = Frame(self.frame_buttons,relief=RIDGE,border=1)
         self.frame_spline = Frame(self.frame_buttons,relief=RIDGE,border=1)
         self.frame_erase = Frame(self.frame_buttons, relief=RIDGE,border=1)
+        self.frame_length = Frame(self.frame_buttons, relief=RIDGE, border=1)
         self.frame_free_draw.pack(side=TOP,fill=BOTH)
         self.frame_polygon.pack(side=TOP,fill=BOTH)
         self.frame_spline.pack(side=TOP,fill=BOTH)
         self.frame_erase.pack(side=TOP,fill=BOTH)
+        self.frame_length.pack(side=BOTTOM,fill=BOTH)
 
         ## LEFT COLUMN
         self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2,width=135) # Left column
@@ -255,6 +260,11 @@ class App:
         self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings(), self.root.focus()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
 
+        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', width=20)
+        self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', width=20)
+        self.label_length = Label(self.frame_length, text='Comprimento')
+        self.text_length = Text(self.frame_length, width=18, height=1, font='arial 10', padx=2)
+
         self.button_new_free_draw.pack(side=TOP,pady=15,padx=5)
         self.button_show_free_draw.pack(side=TOP,pady=10,padx=5)
         self.label_area_free_draw.pack(side=TOP)
@@ -269,6 +279,11 @@ class App:
         self.button_show_spline.pack(side=TOP,pady=10, padx=5)
         self.label_area_spline.pack(side=TOP)
         self.text_area_spline.pack(side=TOP,pady=10, padx=5)
+
+        self.button_new_length.pack(side=TOP,pady=15)
+        self.button_show_length.pack(side=TOP, pady=10, padx=5)
+        self.label_length.pack(side=TOP)
+        self.text_length.pack(side=TOP, pady=10, padx=5)
 
         self.vbar = Scrollbar(self.frame_canvas, orient='vertical')
         self.hbar = Scrollbar(self.frame_canvas, orient='horizontal')
@@ -342,7 +357,6 @@ class App:
         self.tag_pre_polygon = 'tagPrePolygon'
         self.tag_pre_spline = 'tagPreSpline'
         self.tag_pre_point_spline = 'tagPrePointSpline'
-
         self.tag_dimension_1 = 'tagDimension_1'
         self.tag_dimension_2 = 'tagDimension_2'
         self.tag_dimension_1_line = 'tagLineLength1'
@@ -351,6 +365,7 @@ class App:
         self.tag_polygon = 'tagPolygon'
         self.tag_spline = 'tagSpline'
         self.tag_point_spline = 'tagPointSpline'
+        self.tag_length = 'tagLength'
 
         #--------------------------------------------------------------------
         #----------------------- END OF __init__ ----------------------------
@@ -960,6 +975,19 @@ class App:
                     break
 
             self.language = language
+    
+
+    
+    def get_length_points(self, event):
+
+        point_length = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+
+        if len(self.length.points)<=1:
+            self.length.points.append(point_length)
+            self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.tag_dimension_1)
+            if len(self.length.points) == 1:
+                self.canvas.bind('<Motion>', lambda e: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(e.x),self.canvas.canvasy(e.y), tags= 'tagLength')])
+        
 
 def main():
     myApp = App()
