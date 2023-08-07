@@ -1055,8 +1055,6 @@ class App:
         self.text_length.delete('1.0',END)
         self.text_length.insert(INSERT,f'        {self.length.length:.3f} mm')
 
-        #return 
-
 def main():
     myApp = App()
 
