@@ -1041,9 +1041,12 @@ class App:
                     
         u_1 = Vector(P2.x - P1.x, P2.y - P1.y)
         u_2 = Vector(P4.x - P3.x, P4.y - P3.y)
-
-        beta = (v.y*u_1.x - v.x*u_1.y)/(u_1.x*u_2.y - u_2.x*u_1.y)
-        alpha = (v.x - beta*u_2.x)/u_1.x
+        if u_1.x != 0:
+            beta = (v.y*u_1.x - v.x*u_1.y)/(u_1.x*u_2.y - u_2.x*u_1.y)
+            alpha = (v.x - beta*u_2.x)/u_1.x
+        else:
+            beta = v.x/u_2.x
+            alpha = (v.y - u_2.y*beta)/u_1.y
 
         l1 = alpha*float(self.input_value_1.get())
         l2 = beta*float(self.input_value_2.get())
