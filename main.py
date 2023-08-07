@@ -12,6 +12,14 @@ class Point:
         self.x = x
         self.y = y
 
+class Vector:
+    def __init__(self,x=0.0,y=0.0):
+        self.x = x
+        self.y = y
+    
+    def norm(self):
+        return (self.x**2 + self.y**2)**0.5
+
 class Polygon:
     def __init__(self, points=[]):
         self.pre_points=[]
@@ -144,7 +152,7 @@ class App:
         self.language_menu.add_command(label='Português | Portuguese',command= lambda: self.change_language('PT'))
         self.language_menu.add_command(label='Inglês | English', command= lambda: self.change_language('EN'))
         self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
-        self.language = 'EN' # Default language set to english
+        self.language = 'PT' # Default language set to portuguese
         
 
 
@@ -322,8 +330,8 @@ class App:
                 'EN':'- Select a method to determine the lesion area'
             },
             'unknownLength':{
-                'PT':'Você precisa definir o comprimento conhecido',
-                'EN':'You must define the known length'
+                'PT':'Você precisa definir os comprimentos conhecidos',
+                'EN':'You must define the known lengths'
             },
             'typeLength':{
                 'PT':'Você precisa digitar o comprimento conhecido',
@@ -981,24 +989,49 @@ class App:
     
     def get_length_points(self, event):
 
-        point_length = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+        if self.area.area_ratio_m_proj_px_proj:
+            point_length = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
 
-        if len(self.length.points)<=1:
-            self.length.points.append(point_length)
-            self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.length)
-            if len(self.length.points) == 1:
-                self.canvas.bind('<Motion>', lambda event: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(event.x),self.canvas.canvasy(event.y), tags= 'tagLength')])
+            if len(self.length.points)<=1:
+                self.length.points.append(point_length)
+                self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.length)
+                if len(self.length.points) == 1:
+                    self.canvas.bind('<Motion>', lambda event: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(event.x),self.canvas.canvasy(event.y), tags= 'tagLength')])
+            
+            if len(self.length.points)==2:
+                self.unbind_all()
+                self.return_length(self.length)
         
         else:
-            self.unbind_all()
-
-            self.return_length(self.length)
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
     
 
 
     
-    #def return_length(self,length):
-        
+    def return_length(self,length):
+
+        point_1 = length.points[0]
+        point_2 = length.points[1]
+        v = Vector(x=point_2.x - point_1.x, y=point_2.y - point_1.y)
+
+        P1 = self.dimensionRatio_1.points[0]
+        P2 = self.dimensionRatio_1.points[1]
+        P3 = self.dimensionRatio_2.points[0]
+        P4 = self.dimensionRatio_2.points[1]
+                    
+        u_1 = Vector(P2.x - P1.x, P2.y - P1.y)
+        u_2 = Vector(P4.x - P3.x, P4.y - P3.y)
+
+        beta = (v.y*u_1.x - v.x*u_1.y)/(u_1.x*u_2.y - u_2.x*u_1.y)
+        alpha = (v.x - beta*u_2.x)/u_1.x
+
+        l1 = alpha*float(self.input_value_1.get())
+        l2 = beta*float(self.input_value_2.get())
+        self.length.length = (l1**2 + l2**2)**0.5
+
+        self.text_length.insert(INSERT,f'        {self.length.length:.3f} mm')
+
+        #return 
 
 def main():
     myApp = App()
