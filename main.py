@@ -814,7 +814,7 @@ class App:
             self.polygon.area_m = area_meters
               
     def calcula_area_spline(self):
-        if len(self.spline.points)>3 and self.area.area_ratio_m_proj_px_proj:
+        if len(self.spline.points)>2 and self.area.area_ratio_m_proj_px_proj:
 
             x_t = [ponto.x for ponto in self.spline.points]
             y_t = [ponto.y for ponto in self.spline.points]
