@@ -100,6 +100,7 @@ class Dimension:
 
     def set_length(self,length):
         self.length = length
+    
 
 class Area:
     def __init__(self):
@@ -265,10 +266,10 @@ class App:
         self.label_area_spline = Label(self.frame_spline,text='Área da Spline')
         self.text_area_spline = Text(self.frame_spline,width=18,height=1,font='arial 10',padx=2)
 
-        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings(), self.root.focus()] , width=20)
+        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.clear_dimensions_drawings(), self.root.focus()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
 
-        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', command= lambda: self.canvas.bind('<Button-1>', self.get_length_points), width=20)
+        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', command=self.check_length, width=20)
         self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', width=20)
         self.label_length = Label(self.frame_length, text='Comprimento')
         self.text_length = Text(self.frame_length, width=18, height=1, font='arial 10', padx=2)
@@ -308,6 +309,10 @@ class App:
             'openMessage':{
                 'PT':'1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão',
                 'EN':'1 - Load an Image\n\n2 - Adjust zoom\n\n3 - Type the values of known lengths\n\n4 - Press C1 to define 2 points for length 1\n\n5 - Press C2 to define 2 points for length 2\n\n6 - When both leds turn green, choose a method to select lesion area'
+            },
+            'selectLength':{
+                'PT':'-Clique para selecionar os pontos do comprimento a ser medido.',
+                'EN':'-Click to select points to define the length to be measured.'
             },
             'selectPolygon':{
                 'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',
@@ -374,6 +379,7 @@ class App:
         self.tag_spline = 'tagSpline'
         self.tag_point_spline = 'tagPointSpline'
         self.tag_length = 'tagLength'
+        self.tag_prepoint_length = 'prePointLength'
 
         #--------------------------------------------------------------------
         #----------------------- END OF __init__ ----------------------------
@@ -381,13 +387,25 @@ class App:
         
             
     
+
+    def check_length(self):
+        self.unbind_all()
+        if self.area.area_ratio_m_proj_px_proj:
+            self.clear_drawings()
+            self.clear_dimensions_drawings()
+            self.actionBoxContent.set(self.messagesDict['selectLength'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
+            self.length.reset_points()
+            self.canvas.bind('<Button-1>', self.get_length_points)
+        else:
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
     
     def check_polygon(self):
         self.root.focus()
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectPolygon'][self.language])
             self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.polygon.reset_pre_points()
@@ -442,7 +460,7 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectSpline'][self.language])
             self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.spline.reset_pre_points()
@@ -509,7 +527,7 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectFreeDraw'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.freeDraw.reset_pre_points()
@@ -823,7 +841,7 @@ class App:
         self.root.focus()
         if self.freeDraw.area_m:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.freeDraw.points]
             points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_freeDraw)
@@ -834,7 +852,7 @@ class App:
         self.root.focus()
         if self.polygon.area_px:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.polygon.points]
             points_list.append((self.polygon.points[0].x,self.polygon.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_polygon)
@@ -845,7 +863,7 @@ class App:
         self.root.focus()
         if self.spline.area_m:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             x_t = [ponto.x for ponto in self.spline.points]
             y_t = [ponto.y for ponto in self.spline.points]
 
@@ -881,8 +899,10 @@ class App:
         self.canvas.delete(self.tag_pre_spline)
         self.canvas.delete(self.tag_point_spline)
         self.canvas.delete(self.tag_pre_point_spline)
+        self.canvas.delete(self.tag_length)
+        self.canvas.delete(self.tag_prepoint_length)
 
-    def cler_dimensions_drawings(self):
+    def clear_dimensions_drawings(self):
         self.canvas.delete(self.tag_dimension_1)
         self.canvas.delete(self.tag_dimension_2)
         self.canvas.delete(self.tag_dimension_1_line)
@@ -994,7 +1014,7 @@ class App:
 
             if len(self.length.points)<=1:
                 self.length.points.append(point_length)
-                self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.length)
+                self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.tag_prepoint_length)
                 if len(self.length.points) == 1:
                     self.canvas.bind('<Motion>', lambda event: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(event.x),self.canvas.canvasy(event.y), tags= 'tagLength')])
             
@@ -1029,6 +1049,7 @@ class App:
         l2 = beta*float(self.input_value_2.get())
         self.length.length = (l1**2 + l2**2)**0.5
 
+        self.text_length.delete('1.0',END)
         self.text_length.insert(INSERT,f'        {self.length.length:.3f} mm')
 
         #return 
