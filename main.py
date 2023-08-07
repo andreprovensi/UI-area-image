@@ -121,7 +121,7 @@ class App:
         #--------------------------- MAIN OBJECTS ---------------------------
         #--------------------------------------------------------------------
         self.root = Tk()
-        self.root.title('SMART - Surface Measurement Tool')
+        self.root.title('SMART Monitoring')
         self.root.geometry("1200x800")
         self.icon_figure = ImageTk.PhotoImage(Image.open('./images/logo_only_mouth.png'))
         self.root.wm_iconphoto(False, self.icon_figure)
