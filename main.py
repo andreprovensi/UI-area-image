@@ -270,7 +270,7 @@ class App:
         self.button_erase.pack(side=BOTTOM,pady=25)
 
         self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', command=self.check_length, width=20)
-        self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', width=20)
+        self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', command=self.show_length, width=20)
         self.label_length = Label(self.frame_length, text='Comprimento')
         self.text_length = Text(self.frame_length, width=18, height=1, font='arial 10', padx=2)
 
@@ -357,6 +357,10 @@ class App:
             'loadImage':{
             'PT':'Uma imagem precisa ser carregada',
             'EN':'An image must be loaded'
+            },
+            'defineLength':{
+                'PT':'Um segmento precisa ser definido',
+                'EN':'A segment must be defined'
             }
         }        
             
@@ -878,7 +882,15 @@ class App:
             self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_spline)
         
         else:
-            messagebox.showerror('',self.messagesDict['defineSpline'][self.language])   
+            messagebox.showerror('',self.messagesDict['defineSpline'][self.language])
+    
+    def show_length(self):
+        if self.length.length:
+            self.clear_drawings()
+            points_list = [(p.x, p.y) for p in self.length.points]
+            self.canvas.create_line(points_list, tags=self.tag_length)
+        else:
+            messagebox.showerror('',self.messagesDict['defineLength'][self.language])
 
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
