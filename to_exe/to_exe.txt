@@ -1,3 +1,5 @@
 Digitar no terminal
 
-python - m pyinstaller --noconfirm --onefile --windowed --add-data "C:\Users\andreprovensi\PycharmProjects\UI-area-image\novoEXE\small_green_led.jpg;." --add-data "C:\Users\andreprovensi\PycharmProjects\UI-area-image\novoEXE\small_green_led.jpg;."  "C:\Users\andreprovensi\PycharmProjects\UI-area-image\novoEXE\app.py"
+
+
+python -m pyinstaller --onefile --windowed --icon="logo_removebg.ico" --add-data="logo_removebg.ico;." --add-data "small_green_led.jpg;." --add-data "small_red_led.jpg;." main.py
