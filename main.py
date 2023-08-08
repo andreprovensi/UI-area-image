@@ -6,10 +6,19 @@ from scipy.interpolate import CubicSpline
 import numpy as np
 
 
+
 class Point:
     def __init__(self, x=0.0, y=0.0):
         self.x = x
         self.y = y
+
+class Vector:
+    def __init__(self,x=0.0,y=0.0):
+        self.x = x
+        self.y = y
+    
+    def norm(self):
+        return (self.x**2 + self.y**2)**0.5
 
 class Polygon:
     def __init__(self, points=[]):
@@ -91,6 +100,7 @@ class Dimension:
 
     def set_length(self,length):
         self.length = length
+    
 
 class Area:
     def __init__(self):
@@ -100,33 +110,37 @@ class Area:
         self.area_m_proj = None
         self.area_ratio_m_proj_px_proj = None
 
+
+
 class App:
     def __init__(self):
 
+
+
+        #--------------------------------------------------------------------
+        #--------------------------- MAIN OBJECTS ---------------------------
+        #--------------------------------------------------------------------
         self.root = Tk()
-        self.root.title('SMART - Surface Measurement Tool')
-        self.root.geometry("1000x500")
-
+        self.root.title('SMART Monitoring')
+        self.root.geometry("1200x800")
         self.icon_figure = ImageTk.PhotoImage(Image.open('./images/logo_only_mouth.png'))
-
         self.root.wm_iconphoto(False, self.icon_figure)
-
         self.imagem = Imagem()
-
         self.freeDraw = FreeDraw()
-
         self.polygon = Polygon()
-
         self.spline = Spline()
-
         self.area = Area()
-
         self.dimensionRatio_1 = Dimension()
-
         self.dimensionRatio_2 = Dimension()
+        self.length = Dimension()
         
 
-        # Cria o menu para carregar as imagens
+
+        #--------------------------------------------------------------------
+        #--------------------------- DROPDOWN MENUS -------------------------
+        #--------------------------------------------------------------------
+
+        ## FILE MENU
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar,padx=1,pady=1)
         self.file_menu = Menu(self.menubar,tearoff=False)
@@ -134,175 +148,109 @@ class App:
         self.file_menu.add_command(label="Sair", command=lambda: self.root.quit())
         self.menubar.add_cascade(label="Arquivo", menu=self.file_menu)
 
+        ## LANGUAGE MENU
         self.language_menu = Menu(self.menubar,tearoff=False)
         self.language_menu.add_command(label='Português | Portuguese',command= lambda: self.change_language('PT'))
         self.language_menu.add_command(label='Inglês | English', command= lambda: self.change_language('EN'))
         self.menubar.add_cascade(label='Idioma',menu = self.language_menu)
+        self.language = 'PT' # Default language set to portuguese
+        
 
-        self.language = 'PT'
 
-        # FRAMES
+        #--------------------------------------------------------------------
+        #------------------------------ FRAMES ------------------------------
+        #--------------------------------------------------------------------
 
-        # Frame para Botões dos tipos de desenho
+        ## DRAWING FRAME
         self.frame_buttons = Frame(self.root,relief=GROOVE,borderwidth=2)
         self.frame_buttons.pack(side=RIGHT,fill=Y,expand=False)
-
-        # Frame e componentes para a definição do tamanho da imagem e da razão mm/pixel
-
-        self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2,width=135)
-        self.frame_img_prop.pack(side=LEFT,fill=Y,expand=False)
-
-        self.frame_zoom = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=1)
-        self.frame_checkbox = Frame(self.frame_zoom,height=1)
-
-        self.frame = Frame(self.root,relief=RIDGE,border=1)
-        self.frame.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
-
-        # FRAME INPUT
-        self.frame_input = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=1)
-
-        #FRAME INPUT LABLE
-        self.frame_input_lable = Frame(self.frame_input)
-
-        #FRAME INPUT, LENGTH 1 LED
-        self.frame_input_led_1 = Frame(self.frame_input)
-
-        #FRAME INPUT, LENGTH 2 LED
-        self.frame_input_led_2 = Frame(self.frame_input)
-
-        # FRAME INPUT BUTTON
-        self.frame_input_button = Frame(self.frame_input)
-
-        ### INPUTS, LABEL and LEDS
-        self.dimension_input_lable = ttk.Label(self.frame_input_lable,text='Comprimentos conhecidos em mm',wraplength=150)
-
-        # BUTTON C1 e LED 1
-        self.green_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg'))
-        self.red_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
-        self.led_1 = ttk.Label(self.frame_input_led_1, image=self.red_led_figure_1 )
-        self.C1_button = ttk.Button(self.frame_input_led_1, text='C1', width=4, command=self.C1_button_pressed)
-        self.C1_input_value_was_changed = False
-        
-        # BUTTON C2 e LED 2
-        self.green_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg'))
-        self.red_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg'))
-        self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
-        self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command=self.C2_button_pressed)
-        self.C2_input_value_was_changed = False
-        
-        # SLIDERS e CHECK BOX
-        self.slider_lable = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
-        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=200, orient='horizontal', command =lambda event: self.set_zoom() ,length=125)
-        self.slider.set(30)
-
-        self.on_off = StringVar(self.root)
-        self.check_box = ttk.Checkbutton(self.frame_checkbox, text='Fixar zoom', variable=self.on_off, onvalue='disabled', offvalue='enabled', command=lambda: [self.slider.config(state=self.on_off.get()),self.root.focus()])
-        
-        
-        #INPUTS DO C1 E C2
-        self.input_value_1 = StringVar(self.root)
-        self.dimension_input_1 = Entry(self.frame_input_led_1,textvariable=self.input_value_1, bd=3,width=15)
-        self.input_value_1.trace_add("write", lambda name, index,mode, var=self.input_value_1: self.check_dimension1_value_change())
-        
-        self.input_value_2 = StringVar(self.root)
-        self.dimension_input_2 = Entry(self.frame_input_led_2,textvariable=self.input_value_2, bd=3,width=15)
-        self.input_value_2.trace_add("write", lambda name, index,mode, var=self.input_value_2: self.check_dimension2_value_change())
-        
-        # Action box
-      
-        
-        self.actionBoxContent = StringVar(self.root,value='1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão')
-
-        self.messagesDict = {
-            'openMessage':{
-                'PT':'1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão',
-                'EN':'1 - Load an Image\n\n2 - Adjust the zoom\n\n3 - Type the values of the known lengths\n\n4 - Press C1 to define the points for length 1\n\n5 - Press C2 to define the points for length 2\n\n6 - When the two leds turn green, choose a method to select injury area'
-            },
-            'selectPolygon':{
-                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',
-                'EN':'-Click to select the point that defines the injury.\n\n- Press Enter to close the polygon.'
-            },
-            'selectSpline':{
-                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',
-                'EN':'-Click to select the point that defines the injury.\n\n- Press Enter to close the spline.'
-            },
-            'selectFreeDraw':{
-                'PT':'Clique, segure e arraste para selecionar a lesão, aperte Enter para finalizar o desenho livre',
-                'EN':'Click, hold and drag to select the injury area, press Enter to close the free draw'
-            },
-            'selectLengthPoints':{
-                'PT':'- Selecione os pontos do comprimento conhecido',
-                'EN':'- Select the points of the known length'
-            },
-            'selectMethod':{
-                'PT':'- Selecione um método para delimitar a área da lesão',
-                'EN':'- Select a method to determine the injury area'
-            },
-            'unknownLength':{
-                'PT':'Você precisa definir o comprimento conhecido',
-                'EN':'You must define the known length'
-            },
-            'typeLength':{
-                'PT':'Você precisa digitar o comprimento conhecido',
-                'EN':'You must type the known length'
-            },
-            'definePolygon':{
-                'PT':'O polígono precisa ser definido',
-                'EN':'The polygon must be defined'
-            },
-            'defineFreeDraw':{
-                'PT':'O desenho livre precisa ser definido',
-                'EN':'The free draw must be defined'
-            },
-            'defineSpline':{
-                'PT':'A spline precisa ser definida',
-                'EN':'The spline must be defined'
-            },
-            'loadImage':{
-            'PT':'Uma imagem precisa ser carregada',
-            'EN':'An image must be loaded'
-            }
-        }
-        self.action_box = Message(self.frame_img_prop, text=self.actionBoxContent.get(),bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')      
-            
-        #Positioning
-        self.frame_zoom.pack(side=TOP,fill=BOTH)
-        self.frame_checkbox.pack(side=BOTTOM, fill=BOTH)
-        self.frame_input.pack(side=TOP,fill=BOTH)
-        self.action_box.pack(side=TOP, fill=BOTH,expand=True)
-        self.frame_input_lable.pack(side=TOP)
-        self.frame_input_led_1.pack(side=TOP)
-        self.frame_input_led_2.pack(side=TOP,pady=5)
-        self.frame_input_button.pack(side=TOP)
-
-        self.slider_lable.pack(side=LEFT,anchor='w')
-        self.slider.pack(side=LEFT,anchor='ne',pady=15)
-        self.check_box.pack(side=LEFT,pady=5)
-
-        self.C1_button.pack(side=LEFT,padx=2)
-        self.C2_button.pack(side=LEFT,padx=2)
-
-        self.dimension_input_lable.pack(side=TOP,pady=10)
-        self.dimension_input_1.pack(side=LEFT)
-        self.dimension_input_2.pack(side=LEFT)
-
-        self.led_1.pack(side=RIGHT,anchor='ne')
-        self.led_2.pack(side=RIGHT,anchor='ne')
-    
-        #LADO DIREITO 
-
-        #FRAMES
         self.frame_free_draw = Frame(self.frame_buttons, relief=RIDGE,border=1)
         self.frame_polygon = Frame(self.frame_buttons,relief=RIDGE,border=1)
         self.frame_spline = Frame(self.frame_buttons,relief=RIDGE,border=1)
         self.frame_erase = Frame(self.frame_buttons, relief=RIDGE,border=1)
-
+        self.frame_length = Frame(self.frame_buttons, relief=RIDGE, border=1)
         self.frame_free_draw.pack(side=TOP,fill=BOTH)
         self.frame_polygon.pack(side=TOP,fill=BOTH)
         self.frame_spline.pack(side=TOP,fill=BOTH)
         self.frame_erase.pack(side=TOP,fill=BOTH)
+        self.frame_length.pack(side=BOTTOM,fill=BOTH)
+
+        ## LEFT COLUMN
+        self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2,width=135) # Left column
+        self.frame_img_prop.pack(side=LEFT,fill=Y,expand=False)
+        # Zoom Frame
+        self.frame_zoom = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=2) # Zoom frame
+        self.frame_zoom.pack(side=TOP,fill=BOTH)
+        self.frame_checkbox = Frame(self.frame_zoom,height=1) # Create zoom checkbox button
+        self.frame_checkbox.pack(side=BOTTOM, fill=BOTH)
+        # Length Input Frame
+        self.frame_input = Frame(self.frame_img_prop,relief=RIDGE,borderwidth=2)# Frame creation
+        self.frame_input.pack(side=TOP,fill=BOTH)
+        self.frame_input_label = Frame(self.frame_input) # Label frame
+        self.frame_input_label.pack(side=TOP)
+        self.dimension_input_label = ttk.Label(self.frame_input_label,text='Comprimentos conhecidos em mm',wraplength=150) # Label text
+        self.dimension_input_label.pack(side=TOP,pady=10)
+        self.frame_input_led_1 = Frame(self.frame_input) # Length 1 LED frame
+        self.frame_input_led_1.pack(side=TOP)
+        self.frame_input_led_2 = Frame(self.frame_input) # Length 2 LED frame
+        self.frame_input_led_2.pack(side=TOP,pady=5)
+        self.frame_input_button = Frame(self.frame_input) # Input button frame    
+        self.frame_input_button.pack(side=TOP)
+        # Action Box
+        self.actionBoxContent = StringVar(self.root,value='1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão')
+        self.action_box = Message(self.frame_img_prop, text=self.actionBoxContent.get(),bg='light yellow', anchor='nw',justify=LEFT, width=150, font='arial 8')
+        self.action_box.pack(side=TOP, fill=BOTH,expand=True)
+
+        ## IMAGE CANVAS
+        self.frame_canvas = Frame(self.root,relief=RIDGE,border=1) # Image canvas
+        self.frame_canvas.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
+        self.canvas = Canvas(self.frame_canvas)
+
         
-        #BOTÕES
+
+        #--------------------------------------------------------------------
+        #------------------------- INTERACTIVE OBJECTS ----------------------
+        #--------------------------------------------------------------------
+
+        ## C1 BUTON AND LED 1
+        self.green_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg')) # Green led figure
+        self.red_led_figure_1 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg')) # Red led figure
+        self.led_1 = ttk.Label(self.frame_input_led_1, image=self.red_led_figure_1 ) # Insert figure in frame
+        self.led_1.pack(side=RIGHT,anchor='ne')
+        self.C1_button = ttk.Button(self.frame_input_led_1, text='C1', width=4, command=self.C1_button_pressed) # Create C1 button
+        self.C1_button.pack(side=LEFT,padx=2)
+        self.C1_input_value_was_changed = False # Create value change bool
+
+        ## C2 BUTTON AND LED 2
+        self.green_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_green_led.jpg')) # Green led figure
+        self.red_led_figure_2 = ImageTk.PhotoImage(Image.open('images/small_red_led.jpg')) # Red led figure
+        self.led_2 = ttk.Label(self.frame_input_led_2, image=self.red_led_figure_2)
+        self.led_2.pack(side=RIGHT,anchor='ne')
+        self.C2_button = ttk.Button(self.frame_input_led_2, text='C2', width=4, command=self.C2_button_pressed)
+        self.C2_button.pack(side=LEFT,padx=2)
+        self.C2_input_value_was_changed = False
+
+        ## SLIDERS AND CHECKBOX
+        self.slider_label = ttk.Label(self.frame_zoom,text='Zoom',wraplength=90)
+        self.slider_label.pack(side=LEFT,anchor='w')
+        self.slider = ttk.Scale(self.frame_zoom,from_=1, to=200, orient='horizontal', command =lambda event: self.set_zoom() ,length=125)
+        self.slider.set(30)
+        self.slider.pack(side=LEFT,anchor='ne',pady=15)
+        self.on_off = StringVar(self.root)
+        self.check_box = ttk.Checkbutton(self.frame_checkbox, text='Fixar zoom', variable=self.on_off, onvalue='disabled', offvalue='enabled', command=lambda: [self.slider.config(state=self.on_off.get()),self.root.focus()])
+        self.check_box.pack(side=LEFT,pady=5)
+        
+        ## C1 AND C2 INPUTS
+        self.input_value_1 = StringVar(self.root)
+        self.dimension_input_1 = Entry(self.frame_input_led_1,textvariable=self.input_value_1, bd=3,width=15)
+        self.input_value_1.trace_add("write", lambda name, index,mode, var=self.input_value_1: self.check_dimension1_value_change())
+        self.dimension_input_1.pack(side=LEFT)
+        self.input_value_2 = StringVar(self.root)
+        self.dimension_input_2 = Entry(self.frame_input_led_2,textvariable=self.input_value_2, bd=3,width=15)
+        self.input_value_2.trace_add("write", lambda name, index,mode, var=self.input_value_2: self.check_dimension2_value_change())
+        self.dimension_input_2.pack(side=LEFT)
+
+        ## RIGHT SIDE BUTTONS
         self.button_new_free_draw = ttk.Button(self.frame_free_draw, text ='Novo Desenho Livre', command = self.check_free_draw, width=20)
         self.button_show_free_draw = ttk.Button(self.frame_free_draw, text ='Mostrar Desenho Livre', command = self.show_free_draw, width=20)
         self.label_area_free_draw = Label(self.frame_free_draw,text='Área do Desenho Livre')
@@ -318,8 +266,13 @@ class App:
         self.label_area_spline = Label(self.frame_spline,text='Área da Spline')
         self.text_area_spline = Text(self.frame_spline,width=18,height=1,font='arial 10',padx=2)
 
-        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.cler_dimensions_drawings(), self.root.focus()] , width=20)
+        self.button_erase = ttk.Button(self.frame_erase, text ='Limpar Imagem', command = lambda: [self.clear_drawings(), self.clear_dimensions_drawings(), self.root.focus()] , width=20)
         self.button_erase.pack(side=BOTTOM,pady=25)
+
+        self.button_new_length = ttk.Button(self.frame_length, text='Novo Comprimento', command=self.check_length, width=20)
+        self.button_show_length = ttk.Button(self.frame_length, text='Mostrar Segmento', command=self.show_length, width=20)
+        self.label_length = Label(self.frame_length, text='Comprimento')
+        self.text_length = Text(self.frame_length, width=18, height=1, font='arial 10', padx=2)
 
         self.button_new_free_draw.pack(side=TOP,pady=15,padx=5)
         self.button_show_free_draw.pack(side=TOP,pady=10,padx=5)
@@ -336,19 +289,91 @@ class App:
         self.label_area_spline.pack(side=TOP)
         self.text_area_spline.pack(side=TOP,pady=10, padx=5)
 
-        self.vbar = Scrollbar(self.frame, orient='vertical')
-        self.hbar = Scrollbar(self.frame, orient='horizontal')
+        self.button_new_length.pack(side=TOP,pady=15)
+        self.button_show_length.pack(side=TOP, pady=10, padx=5)
+        self.label_length.pack(side=TOP)
+        self.text_length.pack(side=TOP, pady=10, padx=5)
 
-        # CANVAS
-        self.canvas = Canvas(self.frame)
+        self.vbar = Scrollbar(self.frame_canvas, orient='vertical')
+        self.hbar = Scrollbar(self.frame_canvas, orient='horizontal')
+        self.vbar.pack(side=LEFT,fill=Y)
+        self.hbar.pack(side=BOTTOM,fill=X)
 
-        #TAGS
+
+
+        #--------------------------------------------------------------------
+        #---------------------- MESSAGES DICTIONARY -------------------------
+        #--------------------------------------------------------------------
+        
+        self.messagesDict = {
+            'openMessage':{
+                'PT':'1 - Carregue uma imagem\n\n2 - Ajuste o zoom\n\n3 - Digite os valores dos comprimentos conhecidos\n\n4 - Aperte C1 para definir os pontos do comprimento 1\n\n5 - Aperte C2 para definir os pontos do comprimento 2\n\n6 - Quando os dois leds ficarem verdes, escolha uma forma de selecionar a área da lesão',
+                'EN':'1 - Load an Image\n\n2 - Adjust zoom\n\n3 - Type the values of known lengths\n\n4 - Press C1 to define 2 points for length 1\n\n5 - Press C2 to define 2 points for length 2\n\n6 - When both leds turn green, choose a method to select lesion area'
+            },
+            'selectLength':{
+                'PT':'-Clique para selecionar os pontos do comprimento a ser medido.',
+                'EN':'-Click to select points to define the length to be measured.'
+            },
+            'selectPolygon':{
+                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar o polígono.',
+                'EN':'-Click to select points that define the lesion.\n\n- Press Enter to close the polygon.'
+            },
+            'selectSpline':{
+                'PT':'-Clique para selecionar os pontos que delimitam a lesão.\n\n- Aperte Enter para finalizar a spline.',
+                'EN':'-Click to select points that define the lesion.\n\n- Press Enter to close the spline.'
+            },
+            'selectFreeDraw':{
+                'PT':'Clique, segure e arraste para selecionar a lesão, aperte Enter para finalizar o desenho livre',
+                'EN':'Click, hold and drag to select the lesion area, press Enter to close the free drawing'
+            },
+            'selectLengthPoints':{
+                'PT':'- Selecione os pontos do comprimento conhecido',
+                'EN':'- Select the points that define the known length'
+            },
+            'selectMethod':{
+                'PT':'- Selecione um método para delimitar a área da lesão',
+                'EN':'- Select a method to determine the lesion area'
+            },
+            'unknownLength':{
+                'PT':'Você precisa definir os comprimentos conhecidos',
+                'EN':'You must define the known lengths'
+            },
+            'typeLength':{
+                'PT':'Você precisa digitar o comprimento conhecido',
+                'EN':'You must type the known length'
+            },
+            'definePolygon':{
+                'PT':'O polígono precisa ser definido',
+                'EN':'The polygon must be created'
+            },
+            'defineFreeDraw':{
+                'PT':'O desenho livre precisa ser definido',
+                'EN':'The free drawing must be created'
+            },
+            'defineSpline':{
+                'PT':'A spline precisa ser definida',
+                'EN':'The spline must be created'
+            },
+            'loadImage':{
+            'PT':'Uma imagem precisa ser carregada',
+            'EN':'An image must be loaded'
+            },
+            'defineLength':{
+                'PT':'Um segmento precisa ser definido',
+                'EN':'A segment must be defined'
+            }
+        }        
+            
+       
+       
+        #--------------------------------------------------------------------
+        #------------------------------ TAGS --------------------------------
+        #--------------------------------------------------------------------
  
         self.tag_pre_freeDraw = 'tagPreFreeDraw'
         self.tag_pre_polygon = 'tagPrePolygon'
         self.tag_pre_spline = 'tagPreSpline'
         self.tag_pre_point_spline = 'tagPrePointSpline'
-
         self.tag_dimension_1 = 'tagDimension_1'
         self.tag_dimension_2 = 'tagDimension_2'
         self.tag_dimension_1_line = 'tagLineLength1'
@@ -357,17 +382,34 @@ class App:
         self.tag_polygon = 'tagPolygon'
         self.tag_spline = 'tagSpline'
         self.tag_point_spline = 'tagPointSpline'
+        self.tag_length = 'tagLength'
+        self.tag_prepoint_length = 'prePointLength'
 
-        #SCROLLBARS
-        self.vbar.pack(side=LEFT,fill=Y)
-        self.hbar.pack(side=BOTTOM,fill=X)
+        #--------------------------------------------------------------------
+        #----------------------- END OF __init__ ----------------------------
+        #--------------------------------------------------------------------
+        
             
+    
+
+    def check_length(self):
+        self.unbind_all()
+        if self.area.area_ratio_m_proj_px_proj:
+            self.clear_drawings()
+            self.clear_dimensions_drawings()
+            self.actionBoxContent.set(self.messagesDict['selectLength'][self.language])
+            self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
+            self.length.reset_points()
+            self.canvas.bind('<Button-1>', self.get_length_points)
+        else:
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
+    
     def check_polygon(self):
         self.root.focus()
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectPolygon'][self.language])
             self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.polygon.reset_pre_points()
@@ -422,7 +464,7 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectSpline'][self.language])
             self.action_box.config(text=self.actionBoxContent.get(),justify=LEFT)
             self.spline.reset_pre_points()
@@ -489,7 +531,7 @@ class App:
         self.unbind_all()
         if self.area.area_ratio_m_proj_px_proj:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             self.actionBoxContent.set(self.messagesDict['selectFreeDraw'][self.language])
             self.action_box.config(text=self.actionBoxContent.get())
             self.freeDraw.reset_pre_points()
@@ -718,7 +760,7 @@ class App:
           
             self.canvas.destroy()
                    
-            self.canvas = Canvas(self.frame, width=picture_w_resized, height=picture_h_resized,scrollregion=(0,0,picture_w_resized,picture_h_resized))
+            self.canvas = Canvas(self.frame_canvas, width=picture_w_resized, height=picture_h_resized,scrollregion=(0,0,picture_w_resized,picture_h_resized))
 
             self.canvas.create_image(0, 0, anchor=NW, image=self.imagem.img)
 
@@ -772,7 +814,7 @@ class App:
             self.polygon.area_m = area_meters
               
     def calcula_area_spline(self):
-        if len(self.spline.points)>3 and self.area.area_ratio_m_proj_px_proj:
+        if len(self.spline.points)>2 and self.area.area_ratio_m_proj_px_proj:
 
             x_t = [ponto.x for ponto in self.spline.points]
             y_t = [ponto.y for ponto in self.spline.points]
@@ -803,7 +845,7 @@ class App:
         self.root.focus()
         if self.freeDraw.area_m:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.freeDraw.points]
             points_list.append((self.freeDraw.points[0].x,self.freeDraw.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_freeDraw)
@@ -814,7 +856,7 @@ class App:
         self.root.focus()
         if self.polygon.area_px:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             points_list = [(p.x,p.y) for p in self.polygon.points]
             points_list.append((self.polygon.points[0].x,self.polygon.points[0].y))
             self.canvas.create_line(points_list,tags=self.tag_polygon)
@@ -825,7 +867,7 @@ class App:
         self.root.focus()
         if self.spline.area_m:
             self.clear_drawings()
-            self.cler_dimensions_drawings()
+            self.clear_dimensions_drawings()
             x_t = [ponto.x for ponto in self.spline.points]
             y_t = [ponto.y for ponto in self.spline.points]
 
@@ -840,7 +882,15 @@ class App:
             self.canvas.create_line(points_list_spline,fill='black',tags=self.tag_spline)
         
         else:
-            messagebox.showerror('',self.messagesDict['defineSpline'][self.language])   
+            messagebox.showerror('',self.messagesDict['defineSpline'][self.language])
+    
+    def show_length(self):
+        if self.length.length:
+            self.clear_drawings()
+            points_list = [(p.x, p.y) for p in self.length.points]
+            self.canvas.create_line(points_list, tags=self.tag_length)
+        else:
+            messagebox.showerror('',self.messagesDict['defineLength'][self.language])
 
     def unbind_all(self):
         self.canvas.unbind('<Button-1>')
@@ -861,8 +911,10 @@ class App:
         self.canvas.delete(self.tag_pre_spline)
         self.canvas.delete(self.tag_point_spline)
         self.canvas.delete(self.tag_pre_point_spline)
+        self.canvas.delete(self.tag_length)
+        self.canvas.delete(self.tag_prepoint_length)
 
-    def cler_dimensions_drawings(self):
+    def clear_dimensions_drawings(self):
         self.canvas.delete(self.tag_dimension_1)
         self.canvas.delete(self.tag_dimension_2)
         self.canvas.delete(self.tag_dimension_1_line)
@@ -904,7 +956,7 @@ class App:
             self.file_menu.entryconfigure(1,label = 'Exit')
             
             self.check_box.config(text='Fix Zoom')
-            self.dimension_input_lable.config(text='Known lengths in milimeters',wraplength=0)
+            self.dimension_input_label.config(text='Known lengths in milimeters',wraplength=0)
 
             self.button_new_free_draw.config(text='New Free Draw')
             self.button_show_free_draw.config(text = 'Show Free Draw')
@@ -940,7 +992,7 @@ class App:
             self.file_menu.entryconfigure(1,label = 'Sair')
 
             self.check_box.config(text='Fixar Zoom')
-            self.dimension_input_lable.config(text='Comprimentos conhecidos em milímetros',wraplength=150)
+            self.dimension_input_label.config(text='Comprimentos conhecidos em milímetros',wraplength=150)
 
             self.button_new_free_draw.config(text='Novo Desenho Livre')
             self.button_show_free_draw.config(text = 'Mostrar Desenho Livre')
@@ -963,6 +1015,57 @@ class App:
                     break
 
             self.language = language
+    
+    #def check_length(self, event):
+
+    
+    def get_length_points(self, event):
+
+        if self.area.area_ratio_m_proj_px_proj:
+            point_length = Point(self.canvas.canvasx(event.x),self.canvas.canvasy(event.y))
+
+            if len(self.length.points)<=1:
+                self.length.points.append(point_length)
+                self.canvas.create_oval((point_length.x,point_length.y,point_length.x,point_length.y),fill='black',width=3,tags=self.tag_prepoint_length)
+                if len(self.length.points) == 1:
+                    self.canvas.bind('<Motion>', lambda event: [self.canvas.delete('tagLength'), self.canvas.create_line(self.length.points[0].x, self.length.points[0].y, self.canvas.canvasx(event.x),self.canvas.canvasy(event.y), tags= 'tagLength')])
+            
+            if len(self.length.points)==2:
+                self.unbind_all()
+                self.return_length(self.length)
+        
+        else:
+            messagebox.showerror('',self.messagesDict['unknownLength'][self.language])
+    
+
+
+    
+    def return_length(self,length):
+
+        point_1 = length.points[0]
+        point_2 = length.points[1]
+        v = Vector(x=point_2.x - point_1.x, y=point_2.y - point_1.y)
+
+        P1 = self.dimensionRatio_1.points[0]
+        P2 = self.dimensionRatio_1.points[1]
+        P3 = self.dimensionRatio_2.points[0]
+        P4 = self.dimensionRatio_2.points[1]
+                    
+        u_1 = Vector(P2.x - P1.x, P2.y - P1.y)
+        u_2 = Vector(P4.x - P3.x, P4.y - P3.y)
+        if u_1.x != 0:
+            beta = (v.y*u_1.x - v.x*u_1.y)/(u_1.x*u_2.y - u_2.x*u_1.y)
+            alpha = (v.x - beta*u_2.x)/u_1.x
+        else:
+            beta = v.x/u_2.x
+            alpha = (v.y - u_2.y*beta)/u_1.y
+
+        l1 = alpha*float(self.input_value_1.get())
+        l2 = beta*float(self.input_value_2.get())
+        self.length.length = (l1**2 + l2**2)**0.5
+
+        self.text_length.delete('1.0',END)
+        self.text_length.insert(INSERT,f'        {self.length.length:.3f} mm')
 
 def main():
     myApp = App()
