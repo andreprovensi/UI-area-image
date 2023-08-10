@@ -161,19 +161,30 @@ class App:
         #------------------------------ FRAMES ------------------------------
         #--------------------------------------------------------------------
 
-        ## DRAWING FRAME
+        ## RIGHT COLUMN
+        # Main Frame
         self.frame_buttons = Frame(self.root,relief=GROOVE,borderwidth=2)
         self.frame_buttons.pack(side=RIGHT,fill=Y,expand=False)
-        self.frame_free_draw = Frame(self.frame_buttons, relief=RIDGE,border=1)
-        self.frame_polygon = Frame(self.frame_buttons,relief=RIDGE,border=1)
-        self.frame_spline = Frame(self.frame_buttons,relief=RIDGE,border=1)
-        self.frame_erase = Frame(self.frame_buttons, relief=RIDGE,border=1)
-        self.frame_length = Frame(self.frame_buttons, relief=RIDGE, border=1)
-        self.frame_free_draw.pack(side=TOP,fill=BOTH)
-        self.frame_polygon.pack(side=TOP,fill=BOTH)
-        self.frame_spline.pack(side=TOP,fill=BOTH)
-        self.frame_erase.pack(side=TOP,fill=BOTH)
-        self.frame_length.pack(side=BOTTOM,fill=BOTH)
+        # Canvas for scrolling
+        self.frame_buttons_canvas = Canvas(self.frame_buttons)
+        self.frame_buttons_canvas.pack(side=LEFT, fill=BOTH, expand=False)
+        # Scrollbar
+        self.frame_scrollbar = Scrollbar(self.frame_buttons, orient='vertical', command=self.frame_buttons_canvas.yview)
+        self.frame_scrollbar.pack(side=RIGHT, fill=Y)
+        self.frame_buttons_canvas.config(yscrollcommand=self.frame_scrollbar.set)
+        # Inner Frame
+        self.inner_frame = Frame(self.frame_buttons_canvas)
+        self.frame_buttons_canvas.create_window((0, 0), window=self.inner_frame, anchor='nw')
+        self.frame_free_draw = Frame(self.inner_frame, relief=RIDGE,border=1)
+        self.frame_polygon = Frame(self.inner_frame,relief=RIDGE,border=1)
+        self.frame_spline = Frame(self.inner_frame,relief=RIDGE,border=1)
+        self.frame_erase = Frame(self.inner_frame, relief=RIDGE,border=1)
+        self.frame_length = Frame(self.inner_frame, relief=RIDGE, border=1)
+        self.frame_free_draw.pack(side=TOP,fill=BOTH, expand=True)
+        self.frame_polygon.pack(side=TOP,fill=BOTH, expand=True)
+        self.frame_spline.pack(side=TOP,fill=BOTH, expand=True)
+        self.frame_erase.pack(side=TOP,fill=BOTH, expand=True)
+        self.frame_length.pack(side=BOTTOM,fill=BOTH, expand=True)
 
         ## LEFT COLUMN
         self.frame_img_prop = Frame(self.root,relief=GROOVE,borderwidth=2,width=135) # Left column
@@ -205,6 +216,10 @@ class App:
         self.frame_canvas = Frame(self.root,relief=RIDGE,border=1) # Image canvas
         self.frame_canvas.pack(side=TOP,anchor='n',fill=BOTH, expand=True)
         self.canvas = Canvas(self.frame_canvas)
+        self.vbar = Scrollbar(self.frame_canvas, orient='vertical')
+        self.hbar = Scrollbar(self.frame_canvas, orient='horizontal')
+        self.vbar.pack(side=LEFT,fill=Y)
+        self.hbar.pack(side=BOTTOM,fill=X)
 
         
 
@@ -294,12 +309,16 @@ class App:
         self.label_length.pack(side=TOP)
         self.text_length.pack(side=TOP, pady=10, padx=5)
 
-        self.vbar = Scrollbar(self.frame_canvas, orient='vertical')
-        self.hbar = Scrollbar(self.frame_canvas, orient='horizontal')
-        self.vbar.pack(side=LEFT,fill=Y)
-        self.hbar.pack(side=BOTTOM,fill=X)
+        
 
+        #--------------------------------------------------------------------
+        #---------------------- FINAL ADJUSTMENTS ---------------------------
+        #--------------------------------------------------------------------
 
+        self.inner_frame.update_idletasks()
+        #print(self.inner_frame.winfo_width())
+        self.frame_buttons_canvas.config(width=self.inner_frame.winfo_width())
+        self.frame_buttons_canvas.config(scrollregion = self.frame_buttons_canvas.bbox("all"))
 
         #--------------------------------------------------------------------
         #---------------------- MESSAGES DICTIONARY -------------------------
