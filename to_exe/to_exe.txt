@@ -2,4 +2,4 @@ Digitar no terminal
 
 
 
-python -m pyinstaller --onefile --windowed --icon="logo_removebg.ico" --add-data="logo_removebg.ico;." --add-data "small_green_led.jpg;." --add-data "small_red_led.jpg;." main.py
+pyinstaller --onefile --windowed --icon="logo_removebg.ico" --add-data="logo_removebg.ico;." --add-data "small_green_led.jpg;." --add-data "small_red_led.jpg;." --add-data "logo_only_mouth.png;." main.py
